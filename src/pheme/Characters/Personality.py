@@ -42,6 +42,7 @@ class Personality:
     def _initialize_trait(value: Optional[float]) -> float:
         if value is not None:
             return max(-1.0, min(1.0, value))
+
         return random() * 2 - 1  # Valeur aléatoire entre -1 et 1
 
     def __repr__(self) -> str:

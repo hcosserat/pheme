@@ -1,25 +1,27 @@
-from Enum import Caractere, Personnalite
+from Enum import Caractere
+from Personality import Personality
 
 
 class Character:
-
-    def __init__(self, name: str, caractere: Caractere, personnalite: Personnalite):
+    """
+    Classe représentant un personnage avec un nom, un caractère et une personnalité.
+    """
+    def __init__(self, name: str, caractere: Caractere, personality: Personality):
         """
-        Attributs (ou propriétés)
+        Initialise un personnage avec un nom, un caractère et une personnalité.
         """
         self.name = name
         self.caractere = caractere
-        self.personnalite = personnalite
+        self.personality = personality
 
     def __str__(self) -> str:
         """
         Retourne une description lisible du personnage.
         """
-        return f"{self.name} | Caractère : {self.caractere.value} | Personnalité : {self.personnalite.value}"
+        return f"{self.name} | Caractère : {self.caractere.value} | Personnalité : {self.personality}"
 
     def decrire(self):
         print(self.__str__())
-
 
     def changer_caractere(self, nouveau_caractere: Caractere):
         """
@@ -29,13 +31,10 @@ class Character:
         self.caractere = nouveau_caractere
         print(f"{self.name} change de caractère : '{ancien.value}' → '{nouveau_caractere.value}'")
 
-    
-    def changer_personnalite(self, nouvelle_personnalite: Personnalite):
+    def changer_personnalite(self, new_personality: Personality):
         """
         Modifie la personnalité du personnage.
         """
-        ancienne = self.personnalite
-        self.personnalite = nouvelle_personnalite
-        print(f"{self.name} change de personnalité : '{ancienne.value}' → '{nouvelle_personnalite.value}'")
-
-    pass
+        ancienne = self.personality
+        self.personality = new_personality
+        print(f"{self.name} change de personnalité : '{ancienne}' → '{new_personality}'")
