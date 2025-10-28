@@ -1,11 +1,12 @@
-from Enum import Caractere
-from Personality import Personality
+from .Enum import Caractere
+from .Personality import Personality
 
 
 class Character:
     """
     Classe représentant un personnage avec un nom, un caractère et une personnalité.
     """
+
     def __init__(self, name: str, caractere: Caractere, personality: Personality):
         """
         Initialise un personnage avec un nom, un caractère et une personnalité.

@@ -12,7 +12,6 @@ class Caractere(Enum):
     JOYEUX = "joyeux"
     MELANCOLIQUE = "mélancolique"
 
-
 # class Personnalite(Enum):
 #     """Enum représentant les différents types de personnalité d'un personnage."""
 #     OPTIMISTE = "optimiste"

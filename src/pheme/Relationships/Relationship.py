@@ -1,4 +1,5 @@
-from TypeRelationship import TypeRelationship
+from .TypeRelationship import TypeRelationship
+from ..Characters.Character import Character
 
 
 class Relationship:
@@ -6,11 +7,11 @@ class Relationship:
     Classe représentant une relation entre deux personnes
     """
 
-    def __init__(self, source, target, typeRelationship: TypeRelationship):
+    def __init__(self, source: Character, target: Character, typeRelationship: TypeRelationship):
         """
         Args:
-            source: Personne qui émet la relation
-            target: Personne qui reçoit la relation
+            source (Character): Personne qui émet la relation
+            target (Character): Personne qui reçoit la relation
             typeRelationship (TypeRelationship): Type de relation
         """
         self.source = source
