@@ -1,5 +1,5 @@
 from .Characters.Character import Character
-from .Characters.Enum import Caractere
+from .Characters.Emotions import Emotions
 from .Characters.Personality import Personality
 from .Relationships.Relationship import Relationship
 from .Relationships.TypeRelationship import (
@@ -13,7 +13,7 @@ from .Relationships.TypeRelationship import (
 
 __all__ = [
     'Character',
-    'Caractere',
+    'Emotions',
     'Personality',
     'Relationship',
     'TypeRelationship',

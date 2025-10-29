@@ -7,31 +7,31 @@ def test_creation_personnage():
     print("TEST 1: Création de personnages")
     print("=" * 50)
 
-    # Création de plusieurs personnages avec différents enums
-    hero = Character("Alice", Caractere.COURAGEUX, Personality(agreeableness=0.8, extraversion=0.5))
-    hero.decrire()
+    # Création de plusieurs personnages avec différentes émotions
+    hero = Character("Alice", Personality(agreeableness=0.8, extraversion=0.5), Emotions(happiness=0.8, fear=0.2))
+    print(hero)
 
-    villain = Character("Bob", Caractere.AGRESSIF, Personality(neuroticism=0.7, openness=-0.3))
-    villain.decrire()
+    villain = Character("Bob", Personality(neuroticism=0.7, openness=-0.3), Emotions(anger=0.9, disgust=0.6))
+    print(villain)
 
-    sage = Character("Merlin", Caractere.CALME, Personality(conscientiousness=0.9, openness=-0.9))
-    sage.decrire()
+    sage = Character("Merlin", Personality(conscientiousness=0.9, openness=-0.9), Emotions(happiness=0.5, surprise=0.1))
+    print(sage)
 
     print()
 
 
-def test_changement_caractere():
-    """Test du changement de caractère"""
+def test_changement_emotions():
+    """Test du changement d'émotions"""
     print("=" * 50)
-    print("TEST 2: Changement de caractère")
+    print("TEST 2: Changement d'émotions")
     print("=" * 50)
 
-    personnage = Character("Charlie", Caractere.TIMIDE, Personality(neuroticism=0.6, extraversion=-0.4))
-    personnage.decrire()
+    personnage = Character("Charlie", Personality(neuroticism=0.6, extraversion=-0.4), Emotions(fear=0.8, sadness=0.6))
+    print(personnage)
 
-    print("\n--- Changement de caractère ---")
-    personnage.changer_caractere(Caractere.COURAGEUX)
-    personnage.decrire()
+    print("\n--- Changement d'émotions ---")
+    personnage.changeEmotions(Emotions(happiness=0.7, surprise=0.5))
+    print(personnage)
 
     print()
 
@@ -42,12 +42,12 @@ def test_changement_personnalite():
     print("TEST 3: Changement de personnalité")
     print("=" * 50)
 
-    personnage = Character("Diana", Caractere.JOYEUX, Personality(openness=0.7, agreeableness=0.9))
-    personnage.decrire()
+    personnage = Character("Diana", Personality(openness=0.7, agreeableness=0.9), Emotions(happiness=0.9, surprise=0.3))
+    print(personnage)
 
     print("\n--- Changement de personnalité ---")
-    personnage.changer_personnalite(Personality(openness=-0.5, agreeableness=0.2))
-    personnage.decrire()
+    personnage.changePersonality(Personality(openness=-0.5, agreeableness=0.2))
+    print(personnage)
 
     print()
 
@@ -58,25 +58,36 @@ def test_changements_multiples():
     print("TEST 4: Changements multiples")
     print("=" * 50)
 
-    personnage = Character("Evan", Caractere.IMPULSIF, Personality(conscientiousness=-0.6, extraversion=0.4))
-    personnage.decrire()
+    personnage = Character("Evan", Personality(conscientiousness=-0.6, extraversion=0.4), Emotions(anger=0.7, surprise=0.4))
+    print(personnage)
 
     print("\n--- Évolution du personnage ---")
-    personnage.changer_caractere(Caractere.PATIENT)
-    personnage.changer_personnalite(Personality(conscientiousness=0.5, extraversion=0.1))
-    personnage.decrire()
+    personnage.changeEmotions(Emotions(happiness=0.6, surprise=0.2))
+    personnage.changePersonality(Personality(conscientiousness=0.5, extraversion=0.1))
+    print(personnage)
 
     print()
 
 
-def test_tous_les_caracteres():
-    """Test avec tous les caractères disponibles"""
+def test_diverses_emotions():
+    """Test avec diverses émotions"""
     print("=" * 50)
-    print("TEST 5: Tous les types de caractère")
+    print("TEST 5: Diverses émotions")
     print("=" * 50)
 
-    for caractere in Caractere:
-        perso = Character(f"Test_{caractere.name}", caractere, Personality())
+    # Test avec différentes combinaisons d'émotions
+    emotions_tests = [
+        ("Joyeux", Emotions(happiness=0.9)),
+        ("Triste", Emotions(sadness=0.8)),
+        ("En colère", Emotions(anger=0.9)),
+        ("Apeuré", Emotions(fear=0.8)),
+        ("Surpris", Emotions(surprise=0.9)),
+        ("Dégoûté", Emotions(disgust=0.8)),
+        ("Neutre", Emotions()),
+    ]
+
+    for nom, emotion in emotions_tests:
+        perso = Character(nom, Personality(), emotion)
         print(f"  - {perso}")
 
     print()
@@ -88,13 +99,13 @@ def test_relations():
     print("TEST 6: Relations entre personnages")
     print("=" * 50)
 
-    # Création de personnages
-    garcon = Character("Garçon", Caractere.AGRESSIF, Personality(agreeableness=-0.5, neuroticism=0.6))
-    frere = Character("Frère", Caractere.TIMIDE, Personality(agreeableness=0.7, neuroticism=0.4))
-    roi = Character("Roi", Caractere.CALME, Personality(conscientiousness=0.8, extraversion=0.3))
-    general = Character("Général", Caractere.COURAGEUX, Personality(conscientiousness=0.9, extraversion=0.5))
-    personne_a = Character("Personne A", Caractere.JOYEUX, Personality(agreeableness=0.9, extraversion=0.7))
-    personne_b = Character("Personne B", Caractere.JOYEUX, Personality(agreeableness=0.8, extraversion=0.6))
+    # Création de personnages avec émotions
+    garcon = Character("Garçon", Personality(agreeableness=-0.5, neuroticism=0.6), Emotions(anger=0.8, disgust=0.5))
+    frere = Character("Frère", Personality(agreeableness=0.7, neuroticism=0.4), Emotions(fear=0.6, sadness=0.4))
+    roi = Character("Roi", Personality(conscientiousness=0.8, extraversion=0.3), Emotions(happiness=0.5))
+    general = Character("Général", Personality(conscientiousness=0.9, extraversion=0.5), Emotions(happiness=0.6, surprise=0.2))
+    personne_a = Character("Personne A", Personality(agreeableness=0.9, extraversion=0.7), Emotions(happiness=0.9))
+    personne_b = Character("Personne B", Personality(agreeableness=0.8, extraversion=0.6), Emotions(happiness=0.9, surprise=0.3))
 
     # Un garçon déteste son frère
     relationship_1 = Relationship(
@@ -140,8 +151,8 @@ def test_types_relations():
     print("TEST 7: Types de relations prédéfinis")
     print("=" * 50)
 
-    alice = Character("Alice", Caractere.JOYEUX, Personality())
-    bob = Character("Bob", Caractere.CALME, Personality())
+    alice = Character("Alice", Personality(), Emotions(happiness=0.7))
+    bob = Character("Bob", Personality(), Emotions(happiness=0.6))
 
     # Test de tous les types de relations
     types = [
@@ -168,10 +179,10 @@ if __name__ == "__main__":
     try:
         # Tests des personnages
         test_creation_personnage()
-        test_changement_caractere()
+        test_changement_emotions()
         test_changement_personnalite()
         test_changements_multiples()
-        test_tous_les_caracteres()
+        test_diverses_emotions()
 
         # Tests des relations
         test_relations()
