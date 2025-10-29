@@ -1,11 +1,16 @@
-from TypeRelationship import TypeRelationship
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from Characters.Character import Character
+from .TypeRelationship import TypeRelationship
 
 class Relationship:
     """
     Classe représentant une relation entre deux personnes
     """
     
-    def __init__(self, source, target, typeRelationship: TypeRelationship):
+    def __init__(self, source: Character, target: Character, typeRelationship: TypeRelationship):
         """
         Args:
             source: Personne qui émet la relation
@@ -49,7 +54,7 @@ class Relationship:
         self.confidence = self.newConfidence()
     
     def __str__(self):
-        return (f"Relation: {self.source} → {self.target}\n"
+        return (f"Relation: {self.source.name} → {self.target.name}\n"
                 f"Type: {self.typeRelationship}\n"
                 f"Intensité: {self.intensity:.1f}/100\n"
                 f"Confiance: {self.confidence:.1f}/100")

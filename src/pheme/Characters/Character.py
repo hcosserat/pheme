@@ -1,5 +1,5 @@
-from Enum import Caractere
-from Personality import Personality
+from .Enum import Caractere
+from .Personality import Personality
 
 
 class Character:
