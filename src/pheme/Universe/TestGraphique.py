@@ -16,15 +16,9 @@ if __name__ == "__main__":
 
     newgraph = Graph()
 
-    p1 = Character("Peter", Caractere.CALME, Personality(neuroticism=0.9, openness=-0.9))
-    p2 = Character("Jack", Caractere.AGRESSIF, Personality(neuroticism=0.7, openness=-0.3))
-
-    newgraph.addCharacterAsNode(p1)
-    newgraph.addCharacterAsNode(p2)
-
-    r1 = Relationship(p1, p2, Professionally())
-
-    newgraph.addRelationshipAsEdge(r1)
+    newgraph.addNode("Peter", Caractere.AGRESSIF, Personality(neuroticism=0.9, openness=-0.9))
+    newgraph.addNode("Jacky", Caractere.CALME, Personality(neuroticism=0.9, openness=-0.9))
+    newgraph.addEdge("Peter", "Jacky", Professionally())
 
     root = tk.Tk()
     root.geometry("1200x800")
