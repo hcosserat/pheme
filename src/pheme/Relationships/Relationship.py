@@ -1,6 +1,8 @@
-from .TypeRelationship import TypeRelationship
-from ..Characters.Character import Character
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from .TypeRelationship import TypeRelationship
 
 class Relationship:
     """
@@ -38,20 +40,3 @@ class Relationship:
         """
         Met à jour la relation (L'intimité, l'engagement et la passion)
         """
-        if newPrivacy is not None:
-            self.typeRelationship.privacy = max(-1.0, min(1.0, newPrivacy))
-        if newCommitment is not None:
-            self.typeRelationship.commitment = max(-1.0, min(1.0, newCommitment))
-        if newPassion is not None:
-            self.typeRelationship.passion = max(-1.0, min(1.0, newPassion))
-
-        # Recalculer le nom et les valeurs dérivées
-        self.typeRelationship.nom = self.typeRelationship.identifyName()
-        self.intensity = self.typeRelationship.getIntensity()
-        self.confidence = self.newConfidence()
-
-    def __str__(self):
-        return (f"Relation: {self.source} → {self.target}\n"
-                f"Type: {self.typeRelationship}\n"
-                f"Intensité: {self.intensity:.1f}/100\n"
-                f"Confiance: {self.confidence:.1f}/100")

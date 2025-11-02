@@ -1,4 +1,4 @@
-from .Emotions import Emotions
+from .Enum import Caractere
 from .Personality import Personality
 
 
