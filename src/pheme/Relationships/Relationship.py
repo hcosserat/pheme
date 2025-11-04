@@ -3,6 +3,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from .TypeRelationship import TypeRelationship
+from Characters.Character import Character
 
 class Relationship:
     """

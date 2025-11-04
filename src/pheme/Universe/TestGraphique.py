@@ -4,7 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import tkinter as tk
 
 from Characters.Character import Character
-from Characters.Enum import Caractere
+from Characters.Emotions import Emotions
 from Characters.Personality import Personality
 from Relationships.Relationship import Relationship
 from Relationships.TypeRelationship import TypeRelationship
@@ -16,8 +16,8 @@ if __name__ == "__main__":
 
     newgraph = Graph()
 
-    newgraph.addNode("Peter", Caractere.AGRESSIF, Personality(neuroticism=0.9, openness=-0.9))
-    newgraph.addNode("Jacky", Caractere.CALME, Personality(neuroticism=0.9, openness=-0.9))
+    newgraph.addNode("Alice", Personality(agreeableness=0.8, extraversion=0.5), Emotions(happiness=0.8, fear=0.2))
+    newgraph.addNode("Jacky", Personality(agreeableness=0.8, extraversion=0.5), Emotions(happiness=0.8, fear=0.2))
     newgraph.addEdge("Peter", "Jacky", Professionally())
 
     root = tk.Tk()

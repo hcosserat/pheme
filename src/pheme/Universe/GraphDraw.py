@@ -10,8 +10,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from Characters.Enum import Caractere
 from Characters.Personality import Personality
+from Characters.Emotions import Emotions
 from Graph import Graph
 
 class GraphDraw :
@@ -83,7 +83,7 @@ class GraphDraw :
         self.varName = ttk.Entry(self.frameCharacter, width=20)
         self.varName.grid(row=0, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
         ttk.Label(self.frameCharacter,
-                  text="Caractère:"
+                  text="Emotions:"
                   ).grid(row=1, column=0, sticky=tk.W, pady=2)
         self.varPersonality  = tk.StringVar(value="Calme")
         self.comboPersonality = ttk.Combobox(self.frameCharacter, textvariable=self.varPersonality, 
@@ -220,13 +220,13 @@ class GraphDraw :
             return
         
         try:
-            personality = getattr(Caractere, self.varPersonality.get())
+            emotion = getattr(Emotions, self.varPersonality.get())
         except AttributeError:
-            personality = Caractere.CALME
+            emotion = Emotions()
         
-        personalityV2 = Personality(0, 0, 0, 0, 0)
+        personality = Personality(0, 0, 0, 0, 0)
 
-        self.graph.addNode(name, personality, personalityV2)
+        self.graph.addNode(name, emotion, personality)
         self.clearForm()
         self.updateCharacterCombos()
         self.drawGraph()
@@ -243,9 +243,9 @@ class GraphDraw :
             return
         
         try :
-            personality = getattr(Caractere, self.varPersonality.get())
+            personality = getattr(Emotions, self.varPersonality.get())
         except AttributeError:
-            personality = Caractere.CALME
+            personality = Emotions()
         
         if self.graph.getNode(name):
             self.showInfo(f"Error: Personnage '{name}' existe")
@@ -388,7 +388,7 @@ class GraphDraw :
         if self.graph.getNode(node):
             self.varName.delete(0, tk.END)
             self.varName.insert(0, self.graph.getNode(node).name)
-            self.varPersonality.set(str(self.graph.getNode(node).caractere))
+            self.varPersonality.set(str(self.graph.getNode(node).emotions))
         self.displayNodeInfo(node)
 
     def onClick_Edge(self, edge):
@@ -443,7 +443,7 @@ class GraphDraw :
             
         info = f"=== PERSONNAGE ===\n"
         info += f"Nom: {character.name}\n"
-        info += f"Caractère: {character.caractere}\n"
+        info += f"Emotions: {character.emotions}\n"
         info += f"Personnalité: {character.personality}\n"
         
         outgoing = [edge for edge in self.graph.listEdge if edge.source == character]
