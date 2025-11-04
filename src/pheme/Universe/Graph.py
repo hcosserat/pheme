@@ -17,11 +17,11 @@ class Graph :
         self.listEdge = []
         self.nxGraph = nx.DiGraph()
 
-    def addNode(self, name, caractere, personality):
-        newCharacter = Character(name, caractere, personality)
+    def addNode(self, name, personality, emotions):
+        newCharacter = Character(name, personality, emotions)
         self.listNode.append(newCharacter)
 
-        info = {'caractere':caractere, 'personality':personality}
+        info = {'personality':personality, 'emotions':emotions}
         self.nxGraph.add_node(name, **info)
 
     def removeNode(self, character):
@@ -29,9 +29,9 @@ class Graph :
         self.listEdge = [edge for edge in self.listEdge if edge.source != character and edge.target != character]
         self.nxGraph.remove_node(character)
 
-    def updateNode(self, oldName, newName, caractere, personality):
+    def updateNode(self, oldName, newName, personality, emotions):
         if oldName != newName :
-            self.addNode(newName, caractere, personality)
+            self.addNode(newName, personality, emotions)
             for edge in self.listEdge:
                 if edge.source == oldName:
                     self.addEdge(newName, edge.target, edge.typeRelationship)
@@ -43,8 +43,8 @@ class Graph :
             return
         
         node = self.getNode(oldName)
-        node.caractere = caractere
         node.personality = personality
+        node.emotions = emotions
 
     def getNode(self, name):
         for node in self.listNode:
