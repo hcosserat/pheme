@@ -26,8 +26,8 @@ class Graph :
 
     def removeNode(self, character):
         self.listNode = [node for node in self.listNode if node != character]
-        self.listEdge = [edge for edge in self.listEdge if edge.source != character and edge.target != character]
-        self.nxGraph.remove_node(character)
+        self.listEdge = [edge for edge in self.listEdge if edge.source != character.name and edge.target != character.name]
+        self.nxGraph.remove_node(character.name)
 
     def updateNode(self, oldName, newName, personality, emotions):
         if oldName != newName :

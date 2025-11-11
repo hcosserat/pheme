@@ -16,9 +16,9 @@ if __name__ == "__main__":
 
     newgraph = Graph()
 
-    newgraph.addNode("Alice", Personality(agreeableness=0.8, extraversion=0.5), Emotions(happiness=0.8, fear=0.2))
-    newgraph.addNode("Jacky", Personality(agreeableness=0.8, extraversion=0.5), Emotions(happiness=0.8, fear=0.2))
-    newgraph.addEdge("Peter", "Jacky", Professionally())
+    #newgraph.addNode("Alice", Personality(agreeableness=0.8, extraversion=0.5), Emotions(happiness=0.8, fear=0.2))
+    #newgraph.addNode("Jacky", Personality(agreeableness=0.8, extraversion=0.5), Emotions(happiness=0.8, fear=0.2))
+    #newgraph.addEdge("Peter", "Jacky", Professionally())
 
     root = tk.Tk()
     root.geometry("1200x800")

@@ -1,17 +1,15 @@
 import networkx as nx
 import tkinter as tk
-from tkinter import ttk, messagebox
-
+from tkinter import ttk
 import math
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Characters.Personality import Personality
 from Characters.Emotions import Emotions
+from Relationships.TypeRelationship import TypeRelationship
 from Graph import Graph
 
 class GraphDraw :
@@ -26,6 +24,7 @@ class GraphDraw :
         self.selectedCharacter = None
         self.selectedRelationship = None
         self.editMode = None
+        self.pos = None  # Cache pour les positions des nœuds
 
         self.setupUserInterface()
 
@@ -33,9 +32,29 @@ class GraphDraw :
         mainFrame = ttk.Frame(self.master)
         mainFrame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        controlFrame = ttk.Frame(mainFrame, width=400)
-        controlFrame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
-        controlFrame.pack_propagate(False)
+        # Frame de gauche avec scrollbar
+        leftFrame = ttk.Frame(mainFrame, width=400)
+        leftFrame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 10))
+        leftFrame.pack_propagate(False)
+        
+        # Canvas avec scrollbar pour le panneau de contrôle
+        canvas = tk.Canvas(leftFrame, width=380)
+        scrollbar = ttk.Scrollbar(leftFrame, orient="vertical", command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Frame interne scrollable
+        controlFrame = ttk.Frame(canvas)
+        canvas_window = canvas.create_window((0, 0), window=controlFrame, anchor="nw")
+        
+        # Mise à jour de la zone scrollable
+        def configure_scroll(event):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            canvas.itemconfig(canvas_window, width=event.width)
+        
+        controlFrame.bind("<Configure>", configure_scroll)
+        canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_window, width=e.width))
 
         graphFrame = ttk.Frame(mainFrame)
         graphFrame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
@@ -56,14 +75,6 @@ class GraphDraw :
                    text="Supprimer Sélection",
                    command=self.deleteSelected
                    ).pack(fill=tk.X, pady=2)
-        ttk.Button(frameControlPanel,
-                   text="Refresh Graph",
-                   command=self.drawGraph
-                   ).pack(fill=tk.X, pady=2)
-        ttk.Button(frameControlPanel,
-                   text="Cancel MAJ",
-                   command=self.cancelEdit
-                   ).pack(fill=tk.X, pady=2)
 
         frameInfo = ttk.LabelFrame(frame,
                                    text="Info",
@@ -77,23 +88,67 @@ class GraphDraw :
                                              text="Personnage",
                                              padding=10)
         self.frameCharacter.pack(fill=tk.X, pady=5)
+        
+        # Nom du personnage
         ttk.Label(self.frameCharacter,
                   text="Nom"
                   ).grid(row=0, column=0, sticky=tk.W, pady=2)
         self.varName = ttk.Entry(self.frameCharacter, width=20)
-        self.varName.grid(row=0, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
-        ttk.Label(self.frameCharacter,
-                  text="Emotions:"
-                  ).grid(row=1, column=0, sticky=tk.W, pady=2)
-        self.varPersonality  = tk.StringVar(value="Calme")
-        self.comboPersonality = ttk.Combobox(self.frameCharacter, textvariable=self.varPersonality, 
-                                             values=["Joyeux", "Enervé"], 
-                                             state="readonly", width=17)
-        self.comboPersonality.grid(row=1, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
+        self.varName.grid(row=0, column=1, columnspan=2, sticky=tk.EW, pady=2, padx=(5, 0))
         
-
+        # Séparateur Personnalité
+        ttk.Separator(self.frameCharacter, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky=tk.EW, pady=5)
+        ttk.Label(self.frameCharacter, text="Personnalité", font=('TkDefaultFont', 9, 'bold')).grid(row=2, column=0, columnspan=3, sticky=tk.W, pady=2)
+        
+        # Personality sliders (de -1 à 1)
+        row = 3
+        self.personality_scales = {}
+        personality_traits = [
+            ("Ouverture", "openness"),
+            ("Conscience", "conscientiousness"),
+            ("Extraversion", "extraversion"),
+            ("Agréabilité", "agreeableness"),
+            ("Névrosisme", "neuroticism")
+        ]
+        
+        for label, key in personality_traits:
+            ttk.Label(self.frameCharacter, text=f"{label}:").grid(row=row, column=0, sticky=tk.W, pady=1)
+            scale = tk.Scale(self.frameCharacter, from_=-1.0, to=1.0, resolution=0.1, 
+                           orient=tk.HORIZONTAL, length=150, showvalue=True)
+            scale.set(0.0)
+            scale.grid(row=row, column=1, columnspan=2, sticky=tk.EW, pady=1, padx=(5, 0))
+            self.personality_scales[key] = scale
+            row += 1
+        
+        # Séparateur Émotions
+        ttk.Separator(self.frameCharacter, orient='horizontal').grid(row=row, column=0, columnspan=3, sticky=tk.EW, pady=5)
+        row += 1
+        ttk.Label(self.frameCharacter, text="Émotions", font=('TkDefaultFont', 9, 'bold')).grid(row=row, column=0, columnspan=3, sticky=tk.W, pady=2)
+        row += 1
+        
+        # Emotions sliders (de 0 à 1)
+        self.emotion_scales = {}
+        emotion_traits = [
+            ("Bonheur", "happiness"),
+            ("Tristesse", "sadness"),
+            ("Colère", "anger"),
+            ("Peur", "fear"),
+            ("Surprise", "surprise"),
+            ("Dégoût", "disgust")
+        ]
+        
+        for label, key in emotion_traits:
+            ttk.Label(self.frameCharacter, text=f"{label}:").grid(row=row, column=0, sticky=tk.W, pady=1)
+            scale = tk.Scale(self.frameCharacter, from_=0.0, to=1.0, resolution=0.1, 
+                           orient=tk.HORIZONTAL, length=150, showvalue=True)
+            scale.set(0.0)
+            scale.grid(row=row, column=1, columnspan=2, sticky=tk.EW, pady=1, padx=(5, 0))
+            self.emotion_scales[key] = scale
+            row += 1
+        
+        # Boutons
         self.frameCharacter_btnCharacter = ttk.Frame(self.frameCharacter)
-        self.frameCharacter_btnCharacter.grid(rows=2, column=0, columnspan=2, sticky=tk.EW, pady=5)
+        self.frameCharacter_btnCharacter.grid(row=row, column=0, columnspan=3, sticky=tk.EW, pady=5)
         self.btnCharacter_add = ttk.Button(self.frameCharacter_btnCharacter,
                                               text="New Perso",
                                               command=self.createCharacter)
@@ -117,7 +172,7 @@ class GraphDraw :
         self.varSource = tk.StringVar()
         self.comboSource = ttk.Combobox(self.frameRelationship, textvariable=self.varSource,
                                         width=17)
-        self.comboSource.grid(row=1, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
+        self.comboSource.grid(row=0, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
         ttk.Label(self.frameRelationship,
                   text="Target :"
                   ).grid(row=1, column=0, sticky=tk.W, pady=2)
@@ -128,8 +183,13 @@ class GraphDraw :
         ttk.Label(self.frameRelationship,
                   text="Type :"
                   ).grid(row=2, column=0, sticky=tk.W, pady=2)
-        self.varType = tk.Entry(self.frameRelationship, width=20)
-        self.varType.grid(row=2, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
+        self.varType = tk.StringVar(value="Ami proche")
+        self.comboType = ttk.Combobox(self.frameRelationship, textvariable=self.varType,
+                                      values=["Amour", "Ami proche", "Amour naissant", "Collègue proche", 
+                                              "Connaissance", "Neutre", "Rivalité", "Désaccord", 
+                                              "Hostilité", "Haine"],
+                                      state="readonly", width=17)
+        self.comboType.grid(row=2, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
         
         self.frameRelationship_btnRelationship = ttk.Frame(self.frameRelationship)
         self.frameRelationship_btnRelationship.grid(rows=2, column=0, columnspan=2, sticky=tk.EW, pady=5)
@@ -157,11 +217,17 @@ class GraphDraw :
             source, target = self.selectedRelationship
             self.graph.removeEdge(source, target)
             self.selectedRelationship = None
+            self.pos = None  # Forcer le recalcul du layout
             self.showInfo(f"Relation entre {source} et {target} supprimée")
         elif self.selectedCharacter:
-            self.graph.removeNode(self.selectedCharacter)
+            character = self.graph.getNode(self.selectedCharacter)
+            if character:
+                self.graph.removeNode(character)
+                self.showInfo("Personnage supprimé")
+            else:
+                self.showInfo("Erreur: Personnage introuvable")
             self.selectedCharacter = None
-            self.showInfo("Personnage supprimé")
+            self.pos = None  # Forcer le recalcul du layout
         else:
             self.showInfo("Aucun élément sélectionné")
 
@@ -169,21 +235,18 @@ class GraphDraw :
         self.clearForm()
         self.updateBtn()
         self.drawGraph()
-
-    def cancelEdit(self):
-        self.editMode = None
-        self.selectedCharacter = None
-        self.selectedRelationship = None
-        self.clearForm()
-        self.drawGraph()
-        self.showInfo("MAJ annule")
     
     def clearForm(self):
         self.varName.delete(0, tk.END)
-        self.varPersonality.set("Calme")
+        # Réinitialiser les sliders de personnalité à 0
+        for scale in self.personality_scales.values():
+            scale.set(0.0)
+        # Réinitialiser les sliders d'émotions à 0
+        for scale in self.emotion_scales.values():
+            scale.set(0.0)
         self.varSource.set('')
         self.varTarget.set('')
-        self.varType.delete(0, tk.END)
+        self.varType.set("Ami proche")
 
     def updateBtn(self):
         if self.selectedCharacter and self.editMode == 'node':
@@ -193,7 +256,7 @@ class GraphDraw :
             self.btnCharacter_add.config(state="normal")
             self.btnCharacter_update.config(state="disable")
         
-        if self.selectedRelationship and self.editMode == 'node':
+        if self.selectedRelationship and self.editMode == 'edge':
             self.btnRelationship_add.config(state="disable")
             self.btnRelationship_update.config(state="normal")
         else:
@@ -219,14 +282,27 @@ class GraphDraw :
             self.showInfo(f"Error: Personnage '{name}' existe")
             return
         
-        try:
-            emotion = getattr(Emotions, self.varPersonality.get())
-        except AttributeError:
-            emotion = Emotions()
+        # Récupérer les valeurs de personnalité depuis les sliders
+        personality = Personality(
+            openness=self.personality_scales["openness"].get(),
+            conscientiousness=self.personality_scales["conscientiousness"].get(),
+            extraversion=self.personality_scales["extraversion"].get(),
+            agreeableness=self.personality_scales["agreeableness"].get(),
+            neuroticism=self.personality_scales["neuroticism"].get()
+        )
         
-        personality = Personality(0, 0, 0, 0, 0)
+        # Récupérer les valeurs d'émotions depuis les sliders
+        emotion = Emotions(
+            happiness=self.emotion_scales["happiness"].get(),
+            sadness=self.emotion_scales["sadness"].get(),
+            anger=self.emotion_scales["anger"].get(),
+            fear=self.emotion_scales["fear"].get(),
+            surprise=self.emotion_scales["surprise"].get(),
+            disgust=self.emotion_scales["disgust"].get()
+        )
 
-        self.graph.addNode(name, emotion, personality)
+        self.graph.addNode(name, personality, emotion)  # ORDER: name, personality, emotion
+        self.pos = None  # Forcer le recalcul du layout
         self.clearForm()
         self.updateCharacterCombos()
         self.drawGraph()
@@ -234,37 +310,51 @@ class GraphDraw :
 
     def updateCharacter(self):
         if not self.selectedCharacter:
-            self.showInfo("€rreur: Pas de personnage select")
+            self.showInfo("Erreur: Pas de personnage selectionné")
             return
     
-        name = self.varName.get.strip()
+        name = self.varName.get().strip()
         if not name:
-            self.showInfo("Err0r: Pas de nom de personnage")
+            self.showInfo("Erreur: Pas de nom de personnage")
             return
         
-        try :
-            personality = getattr(Emotions, self.varPersonality.get())
-        except AttributeError:
-            personality = Emotions()
+        # Récupérer les valeurs de personnalité depuis les sliders
+        personality = Personality(
+            openness=self.personality_scales["openness"].get(),
+            conscientiousness=self.personality_scales["conscientiousness"].get(),
+            extraversion=self.personality_scales["extraversion"].get(),
+            agreeableness=self.personality_scales["agreeableness"].get(),
+            neuroticism=self.personality_scales["neuroticism"].get()
+        )
         
-        if self.graph.getNode(name):
-            self.showInfo(f"Error: Personnage '{name}' existe")
+        # Récupérer les valeurs d'émotions depuis les sliders
+        emotion = Emotions(
+            happiness=self.emotion_scales["happiness"].get(),
+            sadness=self.emotion_scales["sadness"].get(),
+            anger=self.emotion_scales["anger"].get(),
+            fear=self.emotion_scales["fear"].get(),
+            surprise=self.emotion_scales["surprise"].get(),
+            disgust=self.emotion_scales["disgust"].get()
+        )
+        
+        # Vérifier si le nouveau nom existe déjà (sauf si c'est le même personnage)
+        if name != self.selectedCharacter and self.graph.getNode(name):
+            self.showInfo(f"Erreur: Personnage '{name}' existe déjà")
             return
 
         if not self.graph.getNode(self.selectedCharacter):
-            self.showInfo("ERror: Pesonnage MAJ introuvable")
+            self.showInfo("Erreur: Personnage MAJ introuvable")
             return
-        
-        personalityV2 = Personality(0, 0, 0, 0, 0)
 
-        self.graph.updateNode(self.selectedCharacter, name, personality, personalityV2)
+        self.graph.updateNode(self.selectedCharacter, name, personality, emotion)  # ORDER: oldName, newName, personality, emotion
+        self.pos = None  # Forcer le recalcul du layout (le nom du nœud change)
         self.selectedCharacter = name
         self.editMode = None
         self.clearForm()
         self.updateCharacterCombos()
         self.updateBtn()
         self.drawGraph()
-        self.showInfo(f"Personnage {name} MAJ success")
+        self.showInfo(f"Personnage '{name}' MAJ success")
 
     def createRelationship(self):
         if len(self.graph.listNode) < 2:
@@ -273,7 +363,7 @@ class GraphDraw :
         
         source = self.varSource.get()
         target = self.varTarget.get()
-        typeRelationship = self.varType.get().strip()
+        typeRelationshipText = self.varType.get()
         
         if not source or not target:
             self.showInfo("Errer: Select correct personnage source et cible")
@@ -283,18 +373,36 @@ class GraphDraw :
             self.showInfo("ErReur: Select differents personnages")
             return
             
-        if not typeRelationship:
+        if not typeRelationshipText:
             self.showInfo("Errevr: Il faut un type de relation")
             return
 
-        if self.graph.getRelationship(source, target):
+        if self.graph.getEdge(source, target):
             self.showInfo(f"ErrEur: Relation existe entre {source} et {target}")
             return
-
-        self.graph.addRelationship(source, target, typeRelationship)
+       
+        relationship_map = {
+            "Amour": (0.8, 0.7, 0.9),
+            "Ami proche": (0.6, 0.5, 0.1),
+            "Amour naissant": (0.5, 0.3, 0.5),
+            "Collègue proche": (0.2, 0.4, 0.1),
+            "Connaissance": (0.15, 0.15, 0.1),
+            "Neutre": (0.0, 0.0, 0.0),
+            "Rivalité": (-0.2, -0.2, -0.3),
+            "Désaccord": (-0.2, -0.2, -0.1),
+            "Hostilité": (-0.5, -0.5, -0.4),
+            "Haine": (-0.8, -0.8, -0.8) 
+        }
+        
+        # Créer l'objet TypeRelationship avec les valeurs appropriées
+        privacy, commitment, passion = relationship_map.get(typeRelationshipText, (0.6, 0.5, 0.1))
+        typeRelationship = TypeRelationship(privacy, commitment, passion)
+        
+        self.graph.addEdge(source, target, typeRelationship)
+        self.pos = None  # Forcer le recalcul du layout
         self.clearForm()
         self.drawGraph()
-        self.showInfo(f"Relation '{typeRelationship}' entre '{source}' et '{target}'")
+        self.showInfo(f"Relation '{typeRelationship.nom}' entre '{source}' et '{target}'")
 
     def updateRelationship(self):
         if not self.selectedRelationship:
@@ -302,8 +410,8 @@ class GraphDraw :
             return
     
         source, target = self.selectedRelationship
-        typeRelationship = self.varType.get().strip()
-        if not typeRelationship:
+        typeRelationshipText = self.varType.get()
+        if not typeRelationshipText:
             self.showInfo("Errevr: Il faut un type de relation")
             return
         
@@ -311,13 +419,27 @@ class GraphDraw :
             self.showInfo("Erreer: Relation introuvable")
             return
 
+        # Mapper le nom sélectionné vers les valeurs appropriées
+        relationship_map = {
+            "Amour": (0.8, 0.7, 0.9),
+            "Ami proche": (0.6, 0.5, 0.1),
+            "Amour naissant": (0.5, 0.3, 0.5),
+            "Collègue proche": (0.2, 0.4, 0.1),
+            "Connaissance": (0.15, 0.15, 0.1),
+            "Neutre": (0.0, 0.0, 0.0),
+            "Rivalité": (-0.2, -0.2, -0.3),
+            "Désaccord": (-0.2, -0.2, -0.1),
+            "Hostilité": (-0.5, -0.5, -0.4),
+            "Haine": (-0.8, -0.8, -0.8)
+        }
+        
+        # Créer l'objet TypeRelationship avec les valeurs appropriées
+        privacy, commitment, passion = relationship_map.get(typeRelationshipText, (0.6, 0.5, 0.1))
+        typeRelationship = TypeRelationship(privacy, commitment, passion)
+        
         self.graph.updateEdge(source, target, typeRelationship)
 
         self.selectedRelationship = None
-        for edge in self.graph.toNetworkx().edges():
-            if edge == [source, target]:
-                self.selectedRelationship = edge
-                break
         self.editMode = None
         self.clearForm()
         self.updateBtn()
@@ -333,7 +455,9 @@ class GraphDraw :
             self.canvas.draw()
             return
 
-        self.pos = nx.spring_layout(self.graph.toNetworkx(), k=3, iterations=50)
+        # Recalculer le layout seulement si nécessaire (première fois ou après modification du graphe)
+        if self.pos is None or set(self.pos.keys()) != set(self.graph.toNetworkx().nodes()):
+            self.pos = nx.spring_layout(self.graph.toNetworkx(), k=3, iterations=50)
         
         node_colors = []
         for node in self.graph.toNetworkx().nodes():
@@ -377,6 +501,8 @@ class GraphDraw :
         else:
             self.selectedRelationship = None
             self.selectedCharacter = None
+            self.editMode = None
+            self.updateBtn()  # Désactiver les boutons de modification
             self.clearInfo()
 
         self.drawGraph()
@@ -386,9 +512,27 @@ class GraphDraw :
         self.selectedRelationship = None
         self.editMode = 'node'
         if self.graph.getNode(node):
+            character = self.graph.getNode(node)
+            # Charger le nom
             self.varName.delete(0, tk.END)
-            self.varName.insert(0, self.graph.getNode(node).name)
-            self.varPersonality.set(str(self.graph.getNode(node).emotions))
+            self.varName.insert(0, character.name)
+            
+            # Charger les valeurs de personnalité dans les sliders
+            self.personality_scales["openness"].set(character.personality.openness)
+            self.personality_scales["conscientiousness"].set(character.personality.conscientiousness)
+            self.personality_scales["extraversion"].set(character.personality.extraversion)
+            self.personality_scales["agreeableness"].set(character.personality.agreeableness)
+            self.personality_scales["neuroticism"].set(character.personality.neuroticism)
+            
+            # Charger les valeurs d'émotions dans les sliders
+            self.emotion_scales["happiness"].set(character.emotions.happiness)
+            self.emotion_scales["sadness"].set(character.emotions.sadness)
+            self.emotion_scales["anger"].set(character.emotions.anger)
+            self.emotion_scales["fear"].set(character.emotions.fear)
+            self.emotion_scales["surprise"].set(character.emotions.surprise)
+            self.emotion_scales["disgust"].set(character.emotions.disgust)
+            
+        self.updateBtn()
         self.displayNodeInfo(node)
 
     def onClick_Edge(self, edge):
@@ -399,8 +543,11 @@ class GraphDraw :
         if self.graph.getEdge(source, target):
             self.varSource.set(source)
             self.varTarget.set(target)
-            self.varType.delete(0, tk.END)
-            self.varType.insert(0, self.graph.getEdge(source, target).typeRelationship)
+            
+            rel = self.graph.getEdge(source, target).typeRelationship
+           
+            self.varType.set(rel.nom if hasattr(rel, 'nom') else "Ami proche")
+        self.updateBtn()
         self.displayEdgeInfo(edge)
 
     def findNode(self, x, y):
@@ -410,7 +557,7 @@ class GraphDraw :
             
         for node, (node_x, node_y) in self.pos.items():
             distance = math.sqrt((node_x - x)**2 + (node_y - y)**2)
-            if distance < 0.1:  # Seuil de détection
+            if distance < 0.1:
                 return node
         return None
 
