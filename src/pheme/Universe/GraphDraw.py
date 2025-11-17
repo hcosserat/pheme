@@ -11,6 +11,8 @@ from Characters.Personality import Personality
 from Characters.Emotions import Emotions
 from Relationships.TypeRelationship import TypeRelationship
 from Graph import Graph
+from TimeManager import TimeManager
+from Evolution import EvolutionManager
 
 class GraphDraw :
     """
@@ -25,8 +27,16 @@ class GraphDraw :
         self.selectedRelationship = None
         self.editMode = None
         self.pos = None  # Cache pour les positions des nœuds
+        
+        # Système temporel
+        self.time_manager = TimeManager(tick_duration=2.0)  # 1 tick toutes les 2 secondes
+        self.time_manager.register_callback(self.on_tick)
+        
+        # Gestionnaire d'évolution
+        self.evolution_manager = EvolutionManager(self.graph)
 
         self.setupUserInterface()
+        self.start_time_loop()  # Démarrer la boucle temporelle
 
     def setupUserInterface(self):
         mainFrame = ttk.Frame(self.master)
@@ -67,6 +77,8 @@ class GraphDraw :
         self.setup_ControlPanel_Character(frame)
 
         self.setup_ControlPanel_Relationship(frame)
+        
+        self.setup_ControlPanel_Time(frame)
 
         frameControlPanel = ttk.LabelFrame(frame, text="Control Panel", padding=10)
         frameControlPanel.pack(fill=tk.X, pady=5)
@@ -620,3 +632,121 @@ class GraphDraw :
 
     def clearInfo(self):
         self.infoText.delete(1.0, tk.END)
+    
+    # ========== MÉTHODES TEMPORELLES ==========
+    
+    def setup_ControlPanel_Time(self, frame):
+        """Configure le panneau de contrôle temporel."""
+        self.frameTime = ttk.LabelFrame(frame, text="Contrôle Temporel", padding=10)
+        self.frameTime.pack(fill=tk.X, pady=5)
+        
+        # Label de statut
+        self.time_status_var = tk.StringVar(value="⏸ Pause | Tick: 0")
+        ttk.Label(self.frameTime, textvariable=self.time_status_var, 
+                 font=('TkDefaultFont', 9, 'bold')).pack(pady=5)
+        
+        # Boutons de contrôle
+        btn_frame = ttk.Frame(self.frameTime)
+        btn_frame.pack(fill=tk.X, pady=5)
+        
+        self.btn_play = ttk.Button(btn_frame, text="▶ Play", command=self.start_time)
+        self.btn_play.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        
+        self.btn_pause = ttk.Button(btn_frame, text="⏸ Pause", command=self.pause_time, state="disabled")
+        self.btn_pause.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        
+        ttk.Button(btn_frame, text="⏹ Reset", command=self.reset_time).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        
+        # Contrôle de vitesse
+        ttk.Label(self.frameTime, text="Vitesse (secondes/tick):").pack(pady=(10, 2))
+        self.speed_var = tk.DoubleVar(value=2.0)
+        speed_scale = ttk.Scale(self.frameTime, from_=0.5, to=10.0, variable=self.speed_var,
+                               orient=tk.HORIZONTAL, command=self.on_speed_change)
+        speed_scale.pack(fill=tk.X, padx=5)
+        
+        self.speed_label = ttk.Label(self.frameTime, text="2.0s")
+        self.speed_label.pack()
+    
+    def start_time(self):
+        """Démarre ou reprend la simulation temporelle."""
+        if self.time_manager.current_tick == 0:
+            self.time_manager.start()
+        else:
+            self.time_manager.resume()
+        
+        self.btn_play.config(state="disabled")
+        self.btn_pause.config(state="normal")
+        self.update_time_status()
+    
+    def pause_time(self):
+        """Met en pause la simulation temporelle."""
+        self.time_manager.pause()
+        self.btn_play.config(state="normal")
+        self.btn_pause.config(state="disabled")
+        self.update_time_status()
+    
+    def reset_time(self):
+        """Réinitialise la simulation temporelle."""
+        self.time_manager.stop()
+        self.time_manager.reset()
+        self.btn_play.config(state="normal")
+        self.btn_pause.config(state="disabled")
+        self.update_time_status()
+    
+    def on_speed_change(self, value):
+        """Appelé quand la vitesse change."""
+        speed = float(value)
+        self.time_manager.set_tick_duration(speed)
+        self.speed_label.config(text=f"{speed:.1f}s")
+    
+    def on_tick(self, tick: int):
+        """
+        Appelé à chaque tick.
+        Fait évoluer les personnages et relations via le EvolutionManager.
+        """
+        # Faire évoluer tous les aspects (émotions, personnalités, relations)
+        self.evolution_manager.evoluer_tout(tick)
+        
+        # Mettre à jour l'interface
+        self.update_time_status()
+        self.refresh_selected_display()
+        
+        # Redessiner le graphe tous les 5 ticks (pour performance)
+        if tick % 5 == 0:
+            self.drawGraph()
+    
+    def update_time_status(self):
+        """Met à jour l'affichage du statut temporel."""
+        status = "▶ Running" if self.time_manager.is_running else "⏸ Pause"
+        tick = self.time_manager.get_current_tick()
+        self.time_status_var.set(f"{status} | Tick: {tick}")
+    
+    def refresh_selected_display(self):
+        """Rafraîchit l'affichage du personnage ou de la relation sélectionné."""
+        if self.selectedCharacter:
+            self.displayNodeInfo(self.selectedCharacter)
+            character = self.graph.getNode(self.selectedCharacter)
+            if character:
+                self.personality_scales["openness"].set(character.personality.openness)
+                self.personality_scales["conscientiousness"].set(character.personality.conscientiousness)
+                self.personality_scales["extraversion"].set(character.personality.extraversion)
+                self.personality_scales["agreeableness"].set(character.personality.agreeableness)
+                self.personality_scales["neuroticism"].set(character.personality.neuroticism)
+                
+                self.emotion_scales["happiness"].set(character.emotions.happiness)
+                self.emotion_scales["sadness"].set(character.emotions.sadness)
+                self.emotion_scales["anger"].set(character.emotions.anger)
+                self.emotion_scales["fear"].set(character.emotions.fear)
+                self.emotion_scales["surprise"].set(character.emotions.surprise)
+                self.emotion_scales["disgust"].set(character.emotions.disgust)
+        
+        elif self.selectedRelationship:
+            self.displayEdgeInfo(self.selectedRelationship)
+    
+    def start_time_loop(self):
+        """Démarre la boucle"""
+        def time_loop():
+            self.time_manager.tick()
+            self.master.after(100, time_loop)
+        
+        time_loop()
