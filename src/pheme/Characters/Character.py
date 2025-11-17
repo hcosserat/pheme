@@ -1,6 +1,10 @@
+from typing import TYPE_CHECKING
+
 from .Emotions import Emotions
 from .Personality import Personality
-from ..Interactions.Interaction import Interaction
+
+if TYPE_CHECKING:
+    from ..Interactions.Interaction import Interaction
 
 
 class Character:
@@ -16,7 +20,7 @@ class Character:
         self.personality = personality
         self.emotions = emotions
 
-        self.known_interactions = set()
+        self.knownInteractions = set()
 
     def __str__(self) -> str:
         """
@@ -43,5 +47,11 @@ class Character:
         self.personality = newPersonality
         print(f"{self.name} change de personnalité : '{ancienne}' → '{newPersonality}'")
 
-    def learnAboutInteraction(self, interaction: Interaction):
-        self.known_interactions.add(interaction)
+    def learnAboutInteraction(self, interaction: 'Interaction'):
+        self.knownInteractions.add(interaction)
+
+    def forgetInteractionsOlderThan(self, currentTimestamp: float, maxInteractionAge: float):
+        self.knownInteractions = {
+            interaction for interaction in self.knownInteractions
+            if interaction.timestamp >= (currentTimestamp - maxInteractionAge)
+        }

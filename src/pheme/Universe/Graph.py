@@ -75,5 +75,14 @@ class Graph:
                 return edge
         return None
 
+    def getNeighbors(self, character: Character) -> list:
+        neighbors = []
+        for edge in self.listEdge:
+            if edge.source == character.name:
+                target_character = self.getNode(edge.target)
+                if target_character is not None:
+                    neighbors.append(target_character)
+        return neighbors
+
     def toNetworkx(self):
         return self.nxGraph

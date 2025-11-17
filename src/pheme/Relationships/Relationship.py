@@ -1,9 +1,13 @@
-import sys
 import os
+import sys
+
+import numpy as np
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from .TypeRelationship import TypeRelationship
 from Characters.Character import Character
+
 
 class Relationship:
     """
@@ -41,3 +45,10 @@ class Relationship:
         """
         Met à jour la relation (L'intimité, l'engagement et la passion)
         """
+
+    def asArray(self):
+        return np.array([
+            self.typeRelationship.privacy,
+            self.typeRelationship.commitment,
+            self.typeRelationship.passion
+        ])
