@@ -1,18 +1,16 @@
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from Characters.Character import Character
-from Relationships.Relationship import Relationship
 import networkx as nx
 
-class Graph :
+from ..Characters.Character import Character
+from ..Relationships.Relationship import Relationship
+
+
+class Graph:
     """
     Classe représantant le graphe de relation
     """
 
     def __init__(self):
-        
+
         self.listNode = []
         self.listEdge = []
         self.nxGraph = nx.DiGraph()
@@ -21,16 +19,17 @@ class Graph :
         newCharacter = Character(name, personality, emotions)
         self.listNode.append(newCharacter)
 
-        info = {'personality':personality, 'emotions':emotions}
+        info = {'personality': personality, 'emotions': emotions}
         self.nxGraph.add_node(name, **info)
 
     def removeNode(self, character):
         self.listNode = [node for node in self.listNode if node != character]
-        self.listEdge = [edge for edge in self.listEdge if edge.source != character.name and edge.target != character.name]
+        self.listEdge = [edge for edge in self.listEdge if
+                         edge.source != character.name and edge.target != character.name]
         self.nxGraph.remove_node(character.name)
 
     def updateNode(self, oldName, newName, personality, emotions):
-        if oldName != newName :
+        if oldName != newName:
             self.addNode(newName, personality, emotions)
             for edge in self.listEdge:
                 if edge.source == oldName:
@@ -41,7 +40,7 @@ class Graph :
                     self.removeEdge(edge.source, edge.target)
             self.removeNode(self.getNode(oldName))
             return
-        
+
         node = self.getNode(oldName)
         node.personality = personality
         node.emotions = emotions
@@ -51,7 +50,7 @@ class Graph :
             if node.name == name:
                 return node
         return None
-    
+
     def getNodeNames(self):
         return [node.name for node in self.listNode]
 
@@ -59,7 +58,7 @@ class Graph :
         newRelationship = Relationship(source, target, typeRelationship)
         self.listEdge.append(newRelationship)
 
-        info = {'typeRelationship':typeRelationship}
+        info = {'typeRelationship': typeRelationship}
         self.nxGraph.add_edge(source, target, **info)
 
     def removeEdge(self, source, target):
@@ -71,11 +70,10 @@ class Graph :
         self.addEdge(source, target, typeRelationship)
 
     def getEdge(self, source, target):
-        for edge in self.listEdge :
+        for edge in self.listEdge:
             if edge.source == source and edge.target == target:
                 return edge
         return None
-    
+
     def toNetworkx(self):
         return self.nxGraph
-    

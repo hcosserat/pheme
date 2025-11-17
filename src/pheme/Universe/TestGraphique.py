@@ -1,19 +1,12 @@
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import tkinter as tk
 
-from Characters.Character import Character
-from Characters.Emotions import Emotions
-from Characters.Personality import Personality
-from Relationships.Relationship import Relationship
-from Relationships.TypeRelationship import TypeRelationship
-from Relationships.TypeRelationship import newRelatioship_Professionally, newRelatioship_Lovely, newRelatioship_Unfriendly
 from Graph import Graph
 from GraphDraw import GraphDraw
+from ..Characters.Emotions import Emotions
+from ..Characters.Personality import Personality
+from ..Relationships.TypeRelationship import newRelatioship_Lovely, newRelatioship_Unfriendly
 
 if __name__ == "__main__":
-
     newgraph = Graph()
 
     newgraph.addNode("Alice", Personality(agreeableness=0.2, extraversion=0.1), Emotions(happiness=0.2, fear=0.8))
