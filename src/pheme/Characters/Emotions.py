@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Emotions:
     """
     Classe représentant les émotions d'un personnage.
@@ -34,3 +37,13 @@ class Emotions:
 
     def __str__(self):
         return self.__repr__()
+
+    def asArray(self):
+        return np.array([
+            self.happiness,
+            self.sadness,
+            self.anger,
+            self.fear,
+            self.surprise,
+            self.disgust
+        ])

@@ -1,6 +1,8 @@
 from random import random
 from typing import Optional
 
+import numpy as np
+
 
 class Personality:
     """
@@ -54,3 +56,12 @@ class Personality:
 
     def __str__(self):
         return self.__repr__()
+
+    def asArray(self):
+        return np.array([
+            self.openness,
+            self.conscientiousness,
+            self.extraversion,
+            self.agreeableness,
+            self.neuroticism
+        ])

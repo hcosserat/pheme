@@ -1,6 +1,8 @@
 from random import random
 from typing import Optional
 
+import numpy as np
+
 from ..Characters.Character import Character
 
 
@@ -64,3 +66,12 @@ class Interaction:
 
     def __str__(self):
         return self.__repr__()
+
+    def asArray(self):
+        return np.array([
+            self.agency,
+            self.communion,
+            self.intensity,
+            self.physical_contact,
+            self.valence
+        ])
