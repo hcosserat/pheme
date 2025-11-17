@@ -12,7 +12,7 @@ from Characters.Emotions import Emotions
 from Relationships.TypeRelationship import TypeRelationship
 from Graph import Graph
 from TimeManager import TimeManager
-from Evolution import EvolutionManager
+from Evolution.EvolutionManager import EvolutionManager
 
 class GraphDraw :
     """
@@ -705,7 +705,7 @@ class GraphDraw :
         Fait évoluer les personnages et relations via le EvolutionManager.
         """
         # Faire évoluer tous les aspects (émotions, personnalités, relations)
-        self.evolution_manager.evoluer_tout(tick)
+        self.evolution_manager.evolve(tick)
         
         # Mettre à jour l'interface
         self.update_time_status()

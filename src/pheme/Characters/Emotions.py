@@ -24,6 +24,22 @@ class Emotions:
         self.surprise = max(0.0, min(1.0, surprise))
         self.disgust = max(0.0, min(1.0, disgust))
 
+    def updateEmotions(self, change):
+        self.updateGoodEmotions(change)
+        self.updateBadEmotions(change)
+
+    def updateGoodEmotions(self, change):
+        self.happiness = max(0.0, min(1.0, self.surprise + change * 0.38))
+        self.surprise = max(0.0, min(1.0, self.surprise + change * 0.59))
+
+    def updateBadEmotions(self, change):
+        self.sadness = max(0.0, min(1.0, self.surprise - change * 0.35))
+        self.anger = max(0.0, min(1.0, self.surprise - change * 0.48))
+        self.fear = max(0.0, min(1.0, self.surprise - change * 0.41))
+        self.disgust = max(0.0, min(1.0, self.surprise - change * 0.54))
+
+        pass
+
     def __repr__(self) -> str:
         return (f"Emotions(happiness={self.happiness:.2f}, "
                 f"sadness={self.sadness:.2f}, "
