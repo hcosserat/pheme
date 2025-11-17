@@ -19,9 +19,7 @@ class EvolutionManager:
         print(f"Cycle numéro: {cycle}")
         self.createRelationship()
         self.updateRelationships()
-        print("là")
         self.updateEmotions()
-        print("là")
 
     def createRelationship(self):
         characters = self.graph.listNode

@@ -53,9 +53,9 @@ class TypeRelationship:
         return (abs(self.privacy) + abs(self.commitment) + abs(self.passion)) / 3.0
 
     def update(self, change):
-        self.privacy = max(-1.0, min(1.0, self.surprise - change * 0.1))
-        self.commitment = max(-1.0, min(1.0, self.surprise - change * 0.15))
-        self.passion = max(-1.0, min(1.0, self.surprise - change * 0.1))
+        self.privacy = max(-1.0, min(1.0, self.privacy - change * 0.1))
+        self.commitment = max(-1.0, min(1.0, self.commitment - change * 0.15))
+        self.passion = max(-1.0, min(1.0, self.passion - change * 0.1))
 
         self.nom = self.identifyName()
 
