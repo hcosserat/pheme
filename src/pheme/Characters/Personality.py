@@ -1,3 +1,4 @@
+import numpy as np
 from random import random
 from typing import Optional
 
@@ -46,6 +47,31 @@ class Personality:
             return max(-1.0, min(1.0, value))
 
         return random() * 2 - 1  # Valeur aléatoire entre -1 et 1
+
+    def getMixPersonality(A, B):
+        personalityA = np.array([
+            A.openness,
+            A.conscientiousness,
+            A.extraversion,
+            A.agreeableness,
+            A.neuroticism
+        ])
+        personalityB = np.array([
+            B.openness,
+            B.conscientiousness,
+            B.extraversion,
+            B.agreeableness,
+            B.neuroticism
+        ])
+        
+        produit = np.dot(personalityA, personalityB)
+        normeA = np.linalg.norm(personalityA)
+        normeB = np.linalg.norm(personalityB)
+
+        if normeA == 0 or normeB == 0:
+            return 0.5
+        similarity = produit / (normeA * normeB)
+        return similarity
 
     def __repr__(self) -> str:
         return (f"Personality(openness={self.openness:.2f}, "

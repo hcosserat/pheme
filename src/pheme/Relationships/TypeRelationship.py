@@ -50,7 +50,17 @@ class TypeRelationship:
         """
         Calcule l'intensité globale basée sur les valeurs absolues
         """
-        return (abs(self.privacy) + abs(self.commitment) + abs(self.passion)) / 3 * 100
+        return (abs(self.privacy) + abs(self.commitment) + abs(self.passion)) / 3.0
+
+    def update(self, change):
+        self.privacy = max(-1.0, min(1.0, self.privacy - change * 0.1))
+        self.commitment = max(-1.0, min(1.0, self.commitment - change * 0.15))
+        self.passion = max(-1.0, min(1.0, self.passion - change * 0.1))
+
+        self.nom = self.identifyName()
+
+    def getAverage(self):
+        return (self.privacy + self.commitment + self.passion) / 3.0
 
     def __str__(self):
         return (f"{self.nom} (I:{self.privacy:.2f}, E:{self.commitment:.2f}, P:{self.passion:.2f})")
