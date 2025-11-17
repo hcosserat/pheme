@@ -14,6 +14,7 @@ class Interaction:
     actor: Character  # personnage qui initie l'action
     target: Character  # personnage qui reçoit l'action
     description: str  # description textuelle de l'interaction
+    timestamp: float  # heure de l'interaction
 
     # Dimensions de l'interaction
     agency: float  # assertivité/dominance de l'acteur (-1 à +1)
@@ -22,7 +23,7 @@ class Interaction:
     physical_contact: float  # contact physique vs verbal/psychologique (0 à 1)
     valence: float  # positif vs négatif pour la cible (-1 à +1)
 
-    def __init__(self, actor: Character, target: Character, description: str,
+    def __init__(self, actor: Character, target: Character, description: str, timestamp: float,
                  agency: Optional[float] = None,
                  communion: Optional[float] = None,
                  intensity: Optional[float] = None,
@@ -32,6 +33,7 @@ class Interaction:
         self.actor = actor
         self.target = target
         self.description = description
+        self.timestamp = timestamp
         self.agency = self._initialize_bipolar_trait(agency)
         self.communion = self._initialize_bipolar_trait(communion)
         self.intensity = self._initialize_unipolar_trait(intensity)

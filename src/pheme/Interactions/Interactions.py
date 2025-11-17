@@ -2,11 +2,12 @@ from .Interaction import Interaction
 from ..Characters.Character import Character
 
 
-def killed(actor: Character, target: Character) -> Interaction:
+def killed(actor: Character, target: Character, timestamp: float) -> Interaction:
     """Interaction où l'acteur tue la cible."""
     return Interaction(
         actor=actor,
         target=target,
+        timestamp=timestamp,
         description="killed",
         agency=0.9,        # très assertif/dominant
         communion=-0.9,    # antisocial
@@ -16,11 +17,12 @@ def killed(actor: Character, target: Character) -> Interaction:
     )
 
 
-def laughed_at(actor: Character, target: Character) -> Interaction:
+def laughed_at(actor: Character, target: Character, timestamp: float) -> Interaction:
     """Interaction où l'acteur se moque de la cible."""
     return Interaction(
         actor=actor,
         target=target,
+        timestamp=timestamp,
         description="laughed at",
         agency=0.5,        # moyennement assertif
         communion=-0.4,    # légèrement antisocial
@@ -30,11 +32,12 @@ def laughed_at(actor: Character, target: Character) -> Interaction:
     )
 
 
-def helped(actor: Character, target: Character) -> Interaction:
+def helped(actor: Character, target: Character, timestamp: float) -> Interaction:
     """Interaction où l'acteur aide la cible."""
     return Interaction(
         actor=actor,
         target=target,
+        timestamp=timestamp,
         description="helped",
         agency=0.3,        # légèrement assertif
         communion=0.8,     # prosocial
@@ -44,11 +47,12 @@ def helped(actor: Character, target: Character) -> Interaction:
     )
 
 
-def kissed(actor: Character, target: Character) -> Interaction:
+def kissed(actor: Character, target: Character, timestamp: float) -> Interaction:
     """Interaction où l'acteur embrasse la cible."""
     return Interaction(
         actor=actor,
         target=target,
+        timestamp=timestamp,
         description="kissed",
         agency=0.2,        # légèrement assertif
         communion=0.7,     # prosocial
@@ -58,11 +62,12 @@ def kissed(actor: Character, target: Character) -> Interaction:
     )
 
 
-def insulted(actor: Character, target: Character) -> Interaction:
+def insulted(actor: Character, target: Character, timestamp: float) -> Interaction:
     """Interaction où l'acteur insulte la cible."""
     return Interaction(
         actor=actor,
         target=target,
+        timestamp=timestamp,
         description="insulted",
         agency=0.6,        # assertif
         communion=-0.7,    # antisocial
@@ -72,11 +77,12 @@ def insulted(actor: Character, target: Character) -> Interaction:
     )
 
 
-def hugged(actor: Character, target: Character) -> Interaction:
+def hugged(actor: Character, target: Character, timestamp: float) -> Interaction:
     """Interaction où l'acteur serre la cible dans ses bras."""
     return Interaction(
         actor=actor,
         target=target,
+        timestamp=timestamp,
         description="hugged",
         agency=0.1,        # peu assertif
         communion=0.9,     # très prosocial
@@ -86,11 +92,12 @@ def hugged(actor: Character, target: Character) -> Interaction:
     )
 
 
-def threatened(actor: Character, target: Character) -> Interaction:
+def threatened(actor: Character, target: Character, timestamp: float) -> Interaction:
     """Interaction où l'acteur menace la cible."""
     return Interaction(
         actor=actor,
         target=target,
+        timestamp=timestamp,
         description="threatened",
         agency=0.8,        # très assertif/dominant
         communion=-0.6,    # antisocial
@@ -100,11 +107,12 @@ def threatened(actor: Character, target: Character) -> Interaction:
     )
 
 
-def praised(actor: Character, target: Character) -> Interaction:
+def praised(actor: Character, target: Character, timestamp: float) -> Interaction:
     """Interaction où l'acteur complimente la cible."""
     return Interaction(
         actor=actor,
         target=target,
+        timestamp=timestamp,
         description="praised",
         agency=0.2,        # légèrement assertif
         communion=0.6,     # prosocial
@@ -114,11 +122,12 @@ def praised(actor: Character, target: Character) -> Interaction:
     )
 
 
-def ignored(actor: Character, target: Character) -> Interaction:
+def ignored(actor: Character, target: Character, timestamp: float) -> Interaction:
     """Interaction où l'acteur ignore la cible."""
     return Interaction(
         actor=actor,
         target=target,
+        timestamp=timestamp,
         description="ignored",
         agency=-0.2,       # passif
         communion=-0.3,    # légèrement antisocial
@@ -128,11 +137,12 @@ def ignored(actor: Character, target: Character) -> Interaction:
     )
 
 
-def comforted(actor: Character, target: Character) -> Interaction:
+def comforted(actor: Character, target: Character, timestamp: float) -> Interaction:
     """Interaction où l'acteur console la cible."""
     return Interaction(
         actor=actor,
         target=target,
+        timestamp=timestamp,
         description="comforted",
         agency=0.1,        # peu assertif
         communion=0.8,     # très prosocial

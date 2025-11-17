@@ -1,5 +1,6 @@
 from .Emotions import Emotions
 from .Personality import Personality
+from ..Interactions.Interaction import Interaction
 
 
 class Character:
@@ -14,6 +15,8 @@ class Character:
         self.name = name
         self.personality = personality
         self.emotions = emotions
+
+        self.known_interactions = set()
 
     def __str__(self) -> str:
         """
@@ -39,3 +42,6 @@ class Character:
         ancienne = self.personality
         self.personality = newPersonality
         print(f"{self.name} change de personnalité : '{ancienne}' → '{newPersonality}'")
+
+    def learnAboutInteraction(self, interaction: Interaction):
+        self.known_interactions.add(interaction)
