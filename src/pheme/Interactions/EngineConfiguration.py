@@ -5,6 +5,8 @@ class EngineConfiguration:
     """
     Configuration du système de relations sociales.
     Contient toutes les matrices et paramètres configurables.
+
+    todo: pour l'instant tout a été rempli par un IA, faudrait les choisir mieux
     """
 
     # === Émotions ===

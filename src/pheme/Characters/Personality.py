@@ -1,4 +1,3 @@
-import numpy as np
 from random import random
 from typing import Optional
 
@@ -63,7 +62,7 @@ class Personality:
             B.agreeableness,
             B.neuroticism
         ])
-        
+
         produit = np.dot(personalityA, personalityB)
         normeA = np.linalg.norm(personalityA)
         normeB = np.linalg.norm(personalityB)

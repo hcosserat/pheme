@@ -1,10 +1,3 @@
-"""
-Test de l'Engine du système de relations sociales
-"""
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from src.pheme.Universe.Graph import Graph
 from src.pheme.Characters.Personality import Personality
 from src.pheme.Characters.Emotions import Emotions

@@ -1,13 +1,9 @@
 import random
-import sys
-import os
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from ..Characters.Personality import Personality
+from ..Relationships.TypeRelationship import TypeRelationship
+from ..Universe.Graph import Graph
 
-from Characters.Personality import Personality
-from Universe.Graph import Graph
-from Relationships.Relationship import Relationship
-from Relationships.TypeRelationship import TypeRelationship
 
 class EvolutionManager:
     def __init__(self, graph: Graph):
@@ -24,28 +20,28 @@ class EvolutionManager:
     def createRelationship(self):
         characters = self.graph.listNode
 
-        for characterIntermediaire in characters :
+        for characterIntermediaire in characters:
             relationship_characterIntermediaire = self.getListRelationship(characterIntermediaire.name)
             listRelationship = list(relationship_characterIntermediaire.items())
             for i, (nameA, relationshipA) in enumerate(listRelationship):
                 for j, (nameB, relationshipB) in enumerate(listRelationship):
                     if i != j and not self.alreadyRelationship(nameA, nameB):
                         self.tryCreateRelationship(nameA, nameB, relationshipA, relationshipB)
-    
+
     def tryCreateRelationship(self, nameA, nameB, relationshipA, relationshipB):
         characterA = self.graph.getNode(nameA)
         characterB = self.graph.getNode(nameB)
 
         if not characterA or not characterB:
             return
-        
+
         probability = self.getProbaRelationship(relationshipA, relationshipB, characterA, characterB)
 
         if random.random() < probability:
             typeRelationship = self.getTypeRelationship(relationshipA, relationshipB, characterA, characterB)
             self.graph.addEdge(nameA, nameB, typeRelationship)
             self.updateEmotionRelationship(nameA, nameB, typeRelationship)
-    
+
     def getProbaRelationship(self, relationshipA, relationshipB, characterA, characterB):
         intensiteA = relationshipA.typeRelationship.getIntensity()
         intensiteB = relationshipB.typeRelationship.getIntensity()
@@ -57,7 +53,7 @@ class EvolutionManager:
         probability = self.probRelationship * intensite * samePersonality * togetherRelationship
 
         return min(0.9, max(0.05, probability))
-    
+
     def getTogetherRelationship(self, relationshipA, relationshipB):
         polarityA = relationshipA.typeRelationship.getAverage()
         polarityB = relationshipB.typeRelationship.getAverage()
@@ -68,8 +64,8 @@ class EvolutionManager:
             return 0.6
         else:
             return 1.0
-        
-    def getTypeRelationship (self, relationshipA, relationshipB, characterA, characterB):
+
+    def getTypeRelationship(self, relationshipA, relationshipB, characterA, characterB):
         mixPrivacy = (relationshipA.typeRelationship.privacy + relationshipB.typeRelationship.privacy) / 2.0
         mixCommitment = (relationshipA.typeRelationship.commitment + relationshipB.typeRelationship.commitment) / 2.0
         mixPassion = (relationshipA.typeRelationship.passion + relationshipB.typeRelationship.passion) / 2.0
@@ -82,18 +78,18 @@ class EvolutionManager:
         passion = self.getMix(mixPassion, mixRelationship)
 
         return TypeRelationship(privacy, commitment, passion)
-    
+
     def getMix(self, mixBase, mix):
         variance = random.uniform(-0.1, 0.1)
         return max(-1.0, min(1.0, mixBase + mix + variance))
-    
+
     def updateEmotionRelationship(self, nameA, nameB, typeRelationship):
         characterA = self.graph.getNode(nameA)
         characterB = self.graph.getNode(nameB)
 
         if not characterA or not characterB:
             return
-        
+
         if typeRelationship.getAverage() > 0:
             characterA.emotions.updateEmotions(typeRelationship.getIntensity())
             characterB.emotions.updateEmotions(typeRelationship.getIntensity())
@@ -137,9 +133,10 @@ class EvolutionManager:
             elif relationship.target == name:
                 listRelationships[relationship.source] = relationship
         return listRelationships
-    
+
     def alreadyRelationship(self, nameA, nameB):
         for relationship in self.graph.listEdge:
-            if ((relationship.source == nameA and relationship.target == nameB) or (relationship.target == nameA and relationship.source == nameB)):
+            if ((relationship.source == nameA and relationship.target == nameB) or (
+                    relationship.target == nameA and relationship.source == nameB)):
                 return True
         return False
