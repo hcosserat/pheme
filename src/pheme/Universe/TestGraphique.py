@@ -1,12 +1,13 @@
 import tkinter as tk
 
-from Graph import Graph
-from GraphDraw import GraphDraw
+from .Graph import Graph
+from .GraphDraw import GraphDraw
 from ..Characters.Emotions import Emotions
 from ..Characters.Personality import Personality
 from ..Relationships.TypeRelationship import newRelatioship_Lovely, newRelatioship_Unfriendly
 
-if __name__ == "__main__":
+
+def main():
     newgraph = Graph()
 
     newgraph.addNode("Alice", Personality(agreeableness=0.2, extraversion=0.1), Emotions(happiness=0.2, fear=0.8))

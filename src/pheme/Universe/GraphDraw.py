@@ -6,11 +6,12 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from Graph import Graph
-from TimeManager import TimeManager
+from .Graph import Graph
+from .TimeManager import TimeManager
 from ..Characters.Emotions import Emotions
 from ..Characters.Personality import Personality
 from ..Evolution.EvolutionManager import EvolutionManager
+from ..Interactions.InteractionsEngine import InteractionsEngine
 from ..Relationships.TypeRelationship import TypeRelationship
 
 
@@ -24,6 +25,7 @@ class GraphDraw:
         self.master.title("Editeur de Graphe de Relations")
 
         self.graph = graph
+        self.interactionEngine = InteractionsEngine(graph)
         self.selectedCharacter = None
         self.selectedRelationship = None
         self.editMode = None
@@ -707,7 +709,7 @@ class GraphDraw:
         Fait évoluer les personnages et relations via le EvolutionManager.
         """
         # Faire évoluer tous les aspects (émotions, personnalités, relations)
-        self.evolution_manager.evolve(tick)
+        self.evolution_manager.evolve()
 
         # Mettre à jour l'interface
         self.update_time_status()
@@ -716,6 +718,8 @@ class GraphDraw:
         # Redessiner le graphe tous les 5 ticks (pour performance)
         if tick % 5 == 0:
             self.drawGraph()
+
+
 
     def update_time_status(self):
         """Met à jour l'affichage du statut temporel."""
