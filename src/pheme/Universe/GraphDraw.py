@@ -633,10 +633,10 @@ class GraphDraw :
     def clearInfo(self):
         self.infoText.delete(1.0, tk.END)
     
-    # ========== MÉTHODES TEMPORELLES ==========
+    # Methode de la gestion du temps
     
     def setup_ControlPanel_Time(self, frame):
-        """Configure le panneau de contrôle temporel."""
+        """panneau de contrôle du temps"""
         self.frameTime = ttk.LabelFrame(frame, text="Contrôle Temporel", padding=10)
         self.frameTime.pack(fill=tk.X, pady=5)
         
@@ -668,7 +668,7 @@ class GraphDraw :
         self.speed_label.pack()
     
     def start_time(self):
-        """Démarre ou reprend la simulation temporelle."""
+        """Démarre ou reprend."""
         if self.time_manager.current_tick == 0:
             self.time_manager.start()
         else:
@@ -679,14 +679,14 @@ class GraphDraw :
         self.update_time_status()
     
     def pause_time(self):
-        """Met en pause la simulation temporelle."""
+        """Met en pause."""
         self.time_manager.pause()
         self.btn_play.config(state="normal")
         self.btn_pause.config(state="disabled")
         self.update_time_status()
     
     def reset_time(self):
-        """Réinitialise la simulation temporelle."""
+        """Réinitialise la simulation"""
         self.time_manager.stop()
         self.time_manager.reset()
         self.btn_play.config(state="normal")
@@ -722,7 +722,7 @@ class GraphDraw :
         self.time_status_var.set(f"{status} | Tick: {tick}")
     
     def refresh_selected_display(self):
-        """Rafraîchit l'affichage du personnage ou de la relation sélectionné."""
+        """Rafraîchit l'affichage du personnage ou de la relation"""
         if self.selectedCharacter:
             self.displayNodeInfo(self.selectedCharacter)
             character = self.graph.getNode(self.selectedCharacter)
