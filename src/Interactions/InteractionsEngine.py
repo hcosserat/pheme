@@ -1,4 +1,4 @@
-from typing import Set
+from typing import Set, List, Tuple
 
 import numpy as np
 
@@ -7,6 +7,7 @@ from ..Characters.Character import Character
 from ..Characters.Emotions import Emotions
 from ..Interactions.Interaction import Interaction
 from ..Relationships.Relationship import Relationship
+from ..Relationships.TypeRelationship import TypeRelationship
 from ..Universe.Graph import Graph
 
 
@@ -22,6 +23,64 @@ class InteractionsEngine:
         """
         self.graph = graph
         self.config = EngineConfiguration()
+        # Liste des propagations en attente : (tick_arrivée, cible, interaction)
+        self.pending_propagations: List[Tuple[int, Character, Interaction]] = []
+
+    def tick(self, current_tick: int):
+        """
+        Met à jour la diffusion des informations.
+        À appeler à chaque tick de la simulation.
+        Traite les informations dont le temps de trajet est écoulé.
+        """
+        # On filtre les événements qui sont arrivés (tick_arrivée <= current_tick)
+        remaining_propagations = []
+
+        for arrival_tick, target, interaction in self.pending_propagations:
+            if arrival_tick <= current_tick:
+                # L'information arrive au personnage cible
+                # On vérifie s'il ne la connait pas déjà (pour éviter les doublons)
+                if interaction not in target.knownInteractions:
+                    target.learnAboutInteraction(interaction)
+                    # Le personnage réagit à cette nouvelle information
+                    self.processInteractionForCharacter(target, interaction)
+
+                    # Optionnel : Ici, on pourrait déclencher une re-diffusion (bouche-à-oreille)
+                    # self.diffuseInteraction(target, interaction, current_tick)
+            else:
+                # L'information est toujours en transit
+                remaining_propagations.append((arrival_tick, target, interaction))
+
+        self.pending_propagations = remaining_propagations
+
+    def diffuseInteraction(self, source: Character, interaction: Interaction, current_tick: int,
+                           already_informed: Set[Character] = None):
+        """
+        Un Character diffuse une information sur une Interaction à ses voisins.
+        La diffusion prend du temps selon la distance informationnelle des relations.
+
+        Args:
+            source: Le personnage qui diffuse l'information
+            interaction: L'interaction à diffuser
+            current_tick: Le tick actuel de la simulation
+            already_informed: (Obsolète avec le système de tick, gardé pour compatibilité)
+        """
+        # Le propagateur apprend l'info immédiatement s'il ne la connait pas
+        if interaction not in source.knownInteractions:
+            source.learnAboutInteraction(interaction)
+
+        neighbors = self.graph.getNeighbors(source)
+
+        for neighbor in neighbors:
+            # Récupérer la relation pour connaître la distance
+            relationship = self.graph.getEdge(source.name, neighbor.name)
+
+            if relationship is not None:
+                # Calcul du moment d'arrivée de l'information
+                distance = relationship.informational_distance
+                arrival_tick = current_tick + distance
+
+                # On planifie l'arrivée de l'information
+                self.pending_propagations.append((arrival_tick, neighbor, interaction))
 
     def processInteractionForCharacter(self, character: Character, interaction: Interaction):
         """
@@ -53,8 +112,7 @@ class InteractionsEngine:
         """
         Traite une interaction directe (le personnage est impliqué).
         Met à jour ses émotions et sa relation avec l'autre participant.
-
-        # todo : mettre à jour les relations avec les personnages en relations avec l'autre participant
+        Met également à jour indirectement les relations avec les proches de l'autre participant.
 
         Args:
             character: Le personnage qui traite l'interaction
@@ -74,20 +132,33 @@ class InteractionsEngine:
             interaction_vector = interaction_vector.copy()
             interaction_vector[4] *= self.config.actor_valence_attenuation
 
-        # Mise à jour des émotions
+        # === 1. Mise à jour des émotions ===
         new_emotions_array = self._apply_emotion_change_direct(
             current_emotions, interaction_vector, personality_vector
         )
         self._update_character_emotions(character, new_emotions_array)
 
-        # Mise à jour de la relation avec l'autre personnage, si elle existe
+        # === 2. Mise à jour de la relation directe ===
         relationship = self.graph.getEdge(character.name, other_character.name)
 
-        if relationship is not None:
-            self._update_relationship_direct(character, other_character, relationship, interaction_vector)
-        else:
-            # todo: si elle existe pas, on la crée ?
-            pass
+        # Si la relation n'existe pas, on la crée (Relation Neutre par défaut)
+        if relationship is None:
+            new_type = TypeRelationship(0.0, 0.0, 0.0)
+            self.graph.addEdge(character.name, other_character.name, new_type)
+            relationship = self.graph.getEdge(character.name, other_character.name)
+
+        self._update_relationship_direct(character, other_character, relationship, interaction_vector)
+
+        # === 3. Propagation : Mise à jour des relations associées ===
+        neighbors = self.graph.getNeighbors(other_character)
+        for neighbor in neighbors:
+            if neighbor.name == character.name:
+                continue
+
+            rel_with_neighbor = self.graph.getEdge(character.name, neighbor.name)
+
+            if rel_with_neighbor is not None:
+                self._update_relationship_indirect(character, rel_with_neighbor, interaction_vector)
 
     def _process_indirect_interaction(self, character: Character, interaction: Interaction,
                                       has_relation_with_actor: bool, has_relation_with_target: bool):
@@ -203,34 +274,6 @@ class InteractionsEngine:
             True s'il existe une relation de character1 vers character2
         """
         return self.graph.getEdge(character1.name, character2.name) is not None
-
-    def diffuseInteraction(self, source: Character, interaction: Interaction,
-                           already_informed: Set[Character] = None):
-        """
-        Un Character diffuse une information sur une Interaction à ses voisins.
-        Les voisins qui apprennent l'interaction pour la première fois la traitent.
-
-        todo: pour l'instant ça diffuse juste aux voisins, voir si on peut améliorer ça
-
-        Args:
-            source: Le personnage qui diffuse l'information
-            interaction: L'interaction à diffuser
-            already_informed: Ensemble des personnages déjà informés (pour éviter les doublons si besoin)
-        """
-        if already_informed is None:
-            already_informed = set()
-
-        already_informed.add(source)
-        source.learnAboutInteraction(interaction)
-
-        neighbors = self.graph.getNeighbors(source)
-
-        for neighbor in neighbors:
-            if neighbor not in already_informed and interaction not in neighbor.knownInteractions:
-                neighbor.learnAboutInteraction(interaction)
-                already_informed.add(neighbor)
-
-                self.processInteractionForCharacter(neighbor, interaction)
 
     def processInteractionForGroup(self, group: list[Character], interaction: Interaction):
         """

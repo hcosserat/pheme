@@ -9,16 +9,19 @@ class Relationship:
     Classe représentant une relation entre deux personnes
     """
 
-    def __init__(self, source: Character, target: Character, typeRelationship: TypeRelationship):
+    def __init__(self, source: Character, target: Character, typeRelationship: TypeRelationship,
+                 informational_distance: int = 1):
         """
         Args:
             source (Character): Personne qui émet la relation
             target (Character): Personne qui reçoit la relation
             typeRelationship (TypeRelationship): Type de relation
+            informational_distance (int): Temps en ticks pour qu'une information traverse cette relation
         """
         self.source = source
         self.target = target
         self.typeRelationship = typeRelationship
+        self.informational_distance = max(1, int(informational_distance))  # Minimum 1 tick
         self.intensity = typeRelationship.getIntensity()
         self.confidence = self.newConfidence()
 

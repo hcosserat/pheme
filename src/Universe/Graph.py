@@ -54,11 +54,11 @@ class Graph:
     def getNodeNames(self):
         return [node.name for node in self.listNode]
 
-    def addEdge(self, source, target, typeRelationship):
-        newRelationship = Relationship(source, target, typeRelationship)
+    def addEdge(self, source, target, typeRelationship, informational_distance=1):
+        newRelationship = Relationship(source, target, typeRelationship, informational_distance)
         self.listEdge.append(newRelationship)
 
-        info = {'typeRelationship': typeRelationship}
+        info = {'typeRelationship': typeRelationship, 'informational_distance': informational_distance}
         self.nxGraph.add_edge(source, target, **info)
 
     def removeEdge(self, source, target):
