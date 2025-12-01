@@ -11,8 +11,9 @@ from .TimeManager import TimeManager
 from ..Characters.Emotions import Emotions
 from ..Characters.Personality import Personality
 from ..Evolution.EvolutionManager import EvolutionManager
-from ..Relationships.TypeRelationship import TypeRelationship
 from ..Interactions import Interactions
+from ..Interactions.InteractionsEngine import InteractionsEngine
+from ..Relationships.TypeRelationship import TypeRelationship
 
 class GraphDraw:
     """
@@ -24,6 +25,7 @@ class GraphDraw:
         self.master.title("Editeur de Graphe de Relations")
 
         self.graph = graph
+        self.interactionEngine = InteractionsEngine(graph)
         self.selectedCharacter = None
         self.selectedRelationship = None
         self.editMode = None
@@ -215,6 +217,7 @@ class GraphDraw:
                   text="Source :"
                   ).grid(row=0, column=0, sticky=tk.W, pady=2)
         self.varSource = tk.StringVar()
+        
         self.comboSource = ttk.Combobox(self.frameRelationship, textvariable=self.varSource,
                                         width=17)
         self.comboSource.grid(row=0, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
@@ -867,7 +870,7 @@ class GraphDraw:
         Fait évoluer les personnages et relations via le EvolutionManager.
         """
         # Faire évoluer tous les aspects (émotions, personnalités, relations)
-        self.evolution_manager.evolve(tick)
+        self.evolution_manager.evolve()
 
         # Mettre à jour l'interface
         self.update_time_status()

@@ -11,8 +11,7 @@ class EvolutionManager:
         self.probRelationship = 0.3
         self.decayEmotion = 0.05
 
-    def evolve(self, cycle: int):
-        print(f"Cycle numéro: {cycle}")
+    def evolve(self):
         self.createRelationship()
         self.updateRelationships()
         self.updateEmotions()
