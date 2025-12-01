@@ -1,8 +1,8 @@
 import random
 
-from ..Characters.Personality import Personality
-from ..Relationships.TypeRelationship import TypeRelationship
-from ..Universe.Graph import Graph
+from pheme.Characters.Personality import Personality
+from pheme.Relationships.TypeRelationship import TypeRelationship
+from pheme.Universe.Graph import Graph
 
 
 class EvolutionManager:

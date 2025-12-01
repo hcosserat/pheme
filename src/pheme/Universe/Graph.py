@@ -1,7 +1,7 @@
 import networkx as nx
 
-from ..Characters.Character import Character
-from ..Relationships.Relationship import Relationship
+from pheme.Characters.Character import Character
+from pheme.Relationships.Relationship import Relationship
 
 
 class Graph:

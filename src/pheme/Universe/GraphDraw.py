@@ -6,12 +6,12 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from Graph import Graph
-from TimeManager import TimeManager
-from ..Characters.Emotions import Emotions
-from ..Characters.Personality import Personality
-from ..Evolution.EvolutionManager import EvolutionManager
-from ..Relationships.TypeRelationship import TypeRelationship
+from pheme.Universe.Graph import Graph
+from pheme.Universe.TimeManager import TimeManager
+from pheme.Characters.Emotions import Emotions
+from pheme.Characters.Personality import Personality
+from pheme.Evolution.EvolutionManager import EvolutionManager
+from pheme.Relationships.TypeRelationship import TypeRelationship
 
 
 class GraphDraw:
