@@ -6,13 +6,14 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from pheme.Universe.Graph import Graph
-from pheme.Universe.TimeManager import TimeManager
-from pheme.Characters.Emotions import Emotions
-from pheme.Characters.Personality import Personality
-from pheme.Evolution.EvolutionManager import EvolutionManager
-from pheme.Relationships.TypeRelationship import TypeRelationship
-from pheme.Interactions import Interactions
+from .Graph import Graph
+from .TimeManager import TimeManager
+from ..Characters.Emotions import Emotions
+from ..Characters.Personality import Personality
+from ..Evolution.EvolutionManager import EvolutionManager
+from ..Interactions.InteractionsEngine import InteractionsEngine
+from ..Relationships.TypeRelationship import TypeRelationship
+from ..Interactions import Interactions
 import time
 
 
@@ -26,6 +27,7 @@ class GraphDraw:
         self.master.title("Editeur de Graphe de Relations")
 
         self.graph = graph
+        self.interactionEngine = InteractionsEngine(graph)
         self.selectedCharacter = None
         self.selectedRelationship = None
         self.editMode = None
@@ -260,44 +262,44 @@ class GraphDraw:
                                                text="Interaction",
                                                padding=10)
         self.frameInteraction.pack(fill=tk.X, pady=5)
-        
+
         ttk.Label(self.frameInteraction,
                   text="Acteur :"
                   ).grid(row=0, column=0, sticky=tk.W, pady=2)
         self.varInteractionActor = tk.StringVar()
-        self.comboInteractionActor = ttk.Combobox(self.frameInteraction, 
+        self.comboInteractionActor = ttk.Combobox(self.frameInteraction,
                                                   textvariable=self.varInteractionActor,
                                                   width=17)
         self.comboInteractionActor.grid(row=0, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
-        
+
         ttk.Label(self.frameInteraction,
                   text="Cible :"
                   ).grid(row=1, column=0, sticky=tk.W, pady=2)
         self.varInteractionTarget = tk.StringVar()
-        self.comboInteractionTarget = ttk.Combobox(self.frameInteraction, 
+        self.comboInteractionTarget = ttk.Combobox(self.frameInteraction,
                                                    textvariable=self.varInteractionTarget,
                                                    width=17)
         self.comboInteractionTarget.grid(row=1, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
-        
+
         ttk.Label(self.frameInteraction,
                   text="Type :"
                   ).grid(row=2, column=0, sticky=tk.W, pady=2)
         self.varInteractionType = tk.StringVar(value="helped")
-        self.comboInteractionType = ttk.Combobox(self.frameInteraction, 
+        self.comboInteractionType = ttk.Combobox(self.frameInteraction,
                                                  textvariable=self.varInteractionType,
                                                  values=["helped", "hugged", "kissed", "praised", "comforted",
                                                         "insulted", "threatened", "laughed at", "ignored", "killed"],
                                                  state="readonly", width=17)
         self.comboInteractionType.grid(row=2, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
-        
+
         # Bouton pour déclencher l'interaction
         ttk.Button(self.frameInteraction,
                   text="Déclencher Interaction",
                   command=self.triggerInteraction
                   ).grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=5)
-        
+
         self.frameInteraction.columnconfigure(1, weight=1)
-        
+
         # Initialiser les listes de personnages
         self.updateCharacterCombos()
 
@@ -512,29 +514,29 @@ class GraphDraw:
         actorName = self.varInteractionActor.get()
         targetName = self.varInteractionTarget.get()
         interactionType = self.varInteractionType.get()
-        
+
         if not actorName or not targetName:
             self.showInfo("Erreur: Sélectionner un acteur et une cible")
             return
-        
+
         if actorName == targetName:
             self.showInfo("Erreur: L'acteur et la cible doivent être différents")
             return
-        
+
         actor = self.graph.getNode(actorName)
         target = self.graph.getNode(targetName)
-        
+
         if not actor or not target:
             self.showInfo("Erreur: Personnage introuvable")
             return
-        
+
         # Récupérer la relation si elle existe
         relationship = self.graph.getEdge(actorName, targetName)
-        
+
         # Créer l'interaction selon le type
         timestamp = time.time()
         interaction = None
-        
+
         if interactionType == "helped":
             interaction = Interactions.helped(actor, target, timestamp)
         elif interactionType == "hugged":
@@ -555,7 +557,7 @@ class GraphDraw:
             interaction = Interactions.ignored(actor, target, timestamp)
         elif interactionType == "killed":
             interaction = Interactions.killed(actor, target, timestamp)
-        
+
         if interaction:
             # Afficher le feedback de l'interaction
             feedback = f"🎭 INTERACTION\n\n"
@@ -567,14 +569,14 @@ class GraphDraw:
             feedback += f"  • Intensité: {interaction.intensity:.2f}\n"
             feedback += f"  • Contact physique: {interaction.physical_contact:.2f}\n"
             feedback += f"  • Valence: {interaction.valence:.2f}\n"
-            
+
             # Si une relation existe, on pourrait l'affecter ici
             # (à implémenter selon la logique métier)
             if relationship:
                 feedback += f"\nRelation existante: {relationship.typeRelationship.nom}"
-            
+
             self.showInfo(feedback)
-            
+
             # Rafraîchir l'affichage si un personnage est sélectionné
             self.refresh_selected_display()
         else:
@@ -869,7 +871,7 @@ class GraphDraw:
         Fait évoluer les personnages et relations via le EvolutionManager.
         """
         # Faire évoluer tous les aspects (émotions, personnalités, relations)
-        self.evolution_manager.evolve(tick)
+        self.evolution_manager.evolve()
 
         # Mettre à jour l'interface
         self.update_time_status()
@@ -878,6 +880,8 @@ class GraphDraw:
         # Redessiner le graphe tous les 5 ticks (pour performance)
         if tick % 5 == 0:
             self.drawGraph()
+
+
 
     def update_time_status(self):
         """Met à jour l'affichage du statut temporel."""
