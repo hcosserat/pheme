@@ -1,4 +1,5 @@
 import math
+import time
 import tkinter as tk
 from tkinter import ttk
 
@@ -11,10 +12,9 @@ from .TimeManager import TimeManager
 from ..Characters.Emotions import Emotions
 from ..Characters.Personality import Personality
 from ..Evolution.EvolutionManager import EvolutionManager
+from ..Interactions import Interactions
 from ..Interactions.InteractionsEngine import InteractionsEngine
 from ..Relationships.TypeRelationship import TypeRelationship
-from ..Interactions import Interactions
-import time
 
 
 class GraphDraw:
@@ -48,7 +48,7 @@ class GraphDraw:
         mainFrame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         # Frame de gauche avec scrollbar (Personnages)
-        leftFrame = ttk.Frame(mainFrame, width=400)
+        leftFrame = ttk.Frame(mainFrame, width=300)
         leftFrame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 10))
         leftFrame.pack_propagate(False)
 
@@ -288,15 +288,15 @@ class GraphDraw:
         self.comboInteractionType = ttk.Combobox(self.frameInteraction,
                                                  textvariable=self.varInteractionType,
                                                  values=["helped", "hugged", "kissed", "praised", "comforted",
-                                                        "insulted", "threatened", "laughed at", "ignored", "killed"],
+                                                         "insulted", "threatened", "laughed at", "ignored", "killed"],
                                                  state="readonly", width=17)
         self.comboInteractionType.grid(row=2, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
 
         # Bouton pour déclencher l'interaction
         ttk.Button(self.frameInteraction,
-                  text="Déclencher Interaction",
-                  command=self.triggerInteraction
-                  ).grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=5)
+                   text="Déclencher Interaction",
+                   command=self.triggerInteraction
+                   ).grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=5)
 
         self.frameInteraction.columnconfigure(1, weight=1)
 
@@ -633,35 +633,72 @@ class GraphDraw:
             self.canvas.draw()
             return
 
-        # Recalculer le layout seulement si nécessaire (première fois ou après modification du graphe)
         if self.pos is None or set(self.pos.keys()) != set(self.graph.toNetworkx().nodes()):
-            # Utiliser une seed fixe pour avoir un layout stable
             self.pos = nx.spring_layout(self.graph.toNetworkx(), k=3, iterations=50, seed=42)
 
+        # Dessin des Noeuds
         node_colors = []
-        for node in self.graph.toNetworkx().nodes():
-            if node == self.selectedCharacter:
-                node_colors.append('red')
-            else:
-                node_colors.append('skyblue')
-        nx.draw_networkx_nodes(self.graph.toNetworkx(), self.pos,
-                               node_color=node_colors,
-                               node_size=500, ax=self.ax)
-        nx.draw_networkx_labels(self.graph.toNetworkx(), self.pos, ax=self.ax)
+        nx_graph = self.graph.toNetworkx()
+        for node in nx_graph.nodes():
+            color = 'red' if node == self.selectedCharacter else 'skyblue'
+            node_colors.append(color)
 
-        edge_colors = []
-        edge_widths = []
-        for edge in self.graph.toNetworkx().edges():
-            if edge == self.selectedRelationship:
-                edge_colors.append('red')
-                edge_widths.append(3)
+        nx.draw_networkx_nodes(nx_graph, self.pos, node_color=node_colors, node_size=500, ax=self.ax)
+        nx.draw_networkx_labels(nx_graph, self.pos, ax=self.ax)
+
+        # === PRÉPARATION DES ARÊTES ===
+        self.straight_edges_data = []
+        self.curved_edges_data = []
+
+        straight_colors = []
+        straight_widths = []
+        curved_colors = []
+        curved_widths = []
+
+        for u, v in nx_graph.edges():
+            color = 'red' if (u, v) == self.selectedRelationship else 'black'
+            width = 3 if (u, v) == self.selectedRelationship else 1
+
+            if nx_graph.has_edge(v, u):
+                self.curved_edges_data.append((u, v))
+                curved_colors.append(color)
+                curved_widths.append(width)
             else:
-                edge_colors.append('black')
-                edge_widths.append(1)
-        nx.draw_networkx_edges(self.graph.toNetworkx(), self.pos,
-                               edge_color=edge_colors,
-                               width=edge_widths,
-                               arrows=True, arrowsize=20, ax=self.ax)
+                self.straight_edges_data.append((u, v))
+                straight_colors.append(color)
+                straight_widths.append(width)
+
+        # === DESSIN DES ARÊTES ===
+        self.straight_artist = []
+        self.curved_artist = []
+
+        # 1. Arêtes droites
+        if self.straight_edges_data:
+            # draw_networkx_edges retourne une liste de FancyArrowPatch quand arrows=True
+            self.straight_artist = nx.draw_networkx_edges(
+                nx_graph, self.pos,
+                edgelist=self.straight_edges_data,
+                edge_color=straight_colors,
+                width=straight_widths,
+                arrows=True, arrowsize=20, ax=self.ax
+            )
+            # On active le picker manuellement sur chaque flèche
+            for arrow in self.straight_artist:
+                arrow.set_picker(5)  # Tolérance de 5 pixels
+
+        # 2. Arêtes courbées
+        if self.curved_edges_data:
+            self.curved_artist = nx.draw_networkx_edges(
+                nx_graph, self.pos,
+                edgelist=self.curved_edges_data,
+                edge_color=curved_colors,
+                width=curved_widths,
+                connectionstyle='arc3, rad=0.2',
+                arrows=True, arrowsize=20, ax=self.ax
+            )
+            # On active le picker manuellement
+            for arrow in self.curved_artist:
+                arrow.set_picker(5)
 
         self.ax.set_axis_off()
         self.canvas.draw()
@@ -671,7 +708,7 @@ class GraphDraw:
             return
 
         clickNode = self.findNode(event.xdata, event.ydata)
-        clickEdge = self.findEdge(event.xdata, event.ydata)
+        clickEdge = self.findEdge(event)  # <-- On passe 'event' directement
 
         if clickNode:
             self.onClick_Node(clickNode)
@@ -681,7 +718,7 @@ class GraphDraw:
             self.selectedRelationship = None
             self.selectedCharacter = None
             self.editMode = None
-            self.updateBtn()  # Désactiver les boutons de modification
+            self.updateBtn()
             self.clearInfo()
 
         self.drawGraph()
@@ -740,25 +777,31 @@ class GraphDraw:
                 return node
         return None
 
-    def findEdge(self, x, y):
-        if not hasattr(self, 'pos') or x is None or y is None:
-            return None
-        nx_graph = self.graph.toNetworkx()
-        for edge in nx_graph.edges():
-            u, v = edge
-            u_x, u_y = self.pos[u]
-            v_x, v_y = self.pos[v]
-            line_length = math.sqrt((v_x - u_x) ** 2 + (v_y - u_y) ** 2)
-            if line_length == 0:
-                continue
-            t = ((x - u_x) * (v_x - u_x) + (y - u_y) * (v_y - u_y)) / (line_length ** 2)
-            t = max(0, min(1, t))
-            proj_x = u_x + t * (v_x - u_x)
-            proj_y = u_y + t * (v_y - u_y)
+    def findEdge(self, event):
+        """
+        Trouve une arête en utilisant la détection native de Matplotlib.
+        """
 
-            distance = math.sqrt((x - proj_x) ** 2 + (y - proj_y) ** 2)
-            if distance < 0.05:
-                return edge
+        # Fonction utilitaire pour vérifier une liste d'artistes
+        def check_artists(artists, data):
+            if not artists:
+                return None
+            # On parcourt chaque flèche pour voir si l'événement la concerne
+            for i, arrow in enumerate(artists):
+                is_hit, _ = arrow.contains(event)
+                if is_hit:
+                    return data[i]
+            return None
+
+        # 1. Vérifier les arêtes droites
+        edge = check_artists(self.straight_artist, self.straight_edges_data)
+        if edge:
+            return edge
+
+        # 2. Vérifier les arêtes courbées
+        edge = check_artists(self.curved_artist, self.curved_edges_data)
+        if edge:
+            return edge
 
         return None
 
@@ -880,8 +923,6 @@ class GraphDraw:
         # Redessiner le graphe tous les 5 ticks (pour performance)
         if tick % 5 == 0:
             self.drawGraph()
-
-
 
     def update_time_status(self):
         """Met à jour l'affichage du statut temporel."""

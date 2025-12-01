@@ -1,7 +1,7 @@
 import numpy as np
 
-from pheme.Relationships.TypeRelationship import TypeRelationship
-from pheme.Characters.Character import Character
+from .TypeRelationship import TypeRelationship
+from ..Characters.Character import Character
 
 
 class Relationship:
