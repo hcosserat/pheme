@@ -12,6 +12,8 @@ from pheme.Characters.Emotions import Emotions
 from pheme.Characters.Personality import Personality
 from pheme.Evolution.EvolutionManager import EvolutionManager
 from pheme.Relationships.TypeRelationship import TypeRelationship
+from pheme.Interactions import Interactions
+import time
 
 
 class GraphDraw:
@@ -43,12 +45,12 @@ class GraphDraw:
         mainFrame = ttk.Frame(self.master)
         mainFrame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # Frame de gauche avec scrollbar
+        # Frame de gauche avec scrollbar (Personnages)
         leftFrame = ttk.Frame(mainFrame, width=400)
         leftFrame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 10))
         leftFrame.pack_propagate(False)
 
-        # Canvas avec scrollbar pour le panneau de contrôle
+        # Canvas avec scrollbar pour le panneau de contrôle gauche
         canvas = tk.Canvas(leftFrame, width=380)
         scrollbar = ttk.Scrollbar(leftFrame, orient="vertical", command=canvas.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -56,45 +58,75 @@ class GraphDraw:
         canvas.configure(yscrollcommand=scrollbar.set)
 
         # Frame interne scrollable
-        controlFrame = ttk.Frame(canvas)
-        canvas_window = canvas.create_window((0, 0), window=controlFrame, anchor="nw")
+        controlFrameLeft = ttk.Frame(canvas)
+        canvas_window = canvas.create_window((0, 0), window=controlFrameLeft, anchor="nw")
 
         # Mise à jour de la zone scrollable
         def configure_scroll(event):
             canvas.configure(scrollregion=canvas.bbox("all"))
             canvas.itemconfig(canvas_window, width=event.width)
 
-        controlFrame.bind("<Configure>", configure_scroll)
+        controlFrameLeft.bind("<Configure>", configure_scroll)
         canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_window, width=e.width))
 
+        # Frame centrale pour le graphe
         graphFrame = ttk.Frame(mainFrame)
-        graphFrame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        graphFrame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.setup_ControlPanel(controlFrame)
+        # Frame de droite avec scrollbar (Relations et Temps)
+        rightFrame = ttk.Frame(mainFrame, width=400)
+        rightFrame.pack(side=tk.RIGHT, fill=tk.BOTH, padx=(10, 0))
+        rightFrame.pack_propagate(False)
+
+        # Canvas avec scrollbar pour le panneau de contrôle droit
+        canvas_right = tk.Canvas(rightFrame, width=380)
+        scrollbar_right = ttk.Scrollbar(rightFrame, orient="vertical", command=canvas_right.yview)
+        scrollbar_right.pack(side=tk.RIGHT, fill=tk.Y)
+        canvas_right.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        canvas_right.configure(yscrollcommand=scrollbar_right.set)
+
+        # Frame interne scrollable droite
+        controlFrameRight = ttk.Frame(canvas_right)
+        canvas_right_window = canvas_right.create_window((0, 0), window=controlFrameRight, anchor="nw")
+
+        # Mise à jour de la zone scrollable droite
+        def configure_scroll_right(event):
+            canvas_right.configure(scrollregion=canvas_right.bbox("all"))
+            canvas_right.itemconfig(canvas_right_window, width=event.width)
+
+        controlFrameRight.bind("<Configure>", configure_scroll_right)
+        canvas_right.bind("<Configure>", lambda e: canvas_right.itemconfig(canvas_right_window, width=e.width))
+
+        self.setup_ControlPanel_Left(controlFrameLeft)
+        self.setup_ControlPanel_Right(controlFrameRight)
         self.setupGraph(graphFrame)
 
-    def setup_ControlPanel(self, frame):
-
+    def setup_ControlPanel_Left(self, frame):
+        """Panneau de gauche : Personnages et Informations"""
         self.setup_ControlPanel_Character(frame)
 
+        frameInfo = ttk.LabelFrame(frame,
+                                   text="Informations",
+                                   padding=10)
+        frameInfo.pack(fill=tk.BOTH, expand=True, pady=5)
+        self.infoText = tk.Text(frameInfo, height=15, width=30)
+        self.infoText.pack(fill=tk.BOTH, expand=True)
+
+    def setup_ControlPanel_Right(self, frame):
+        """Panneau de droite : Relations, Interactions, Contrôle Temporel et Actions"""
         self.setup_ControlPanel_Relationship(frame)
+
+        self.setup_ControlPanel_Interaction(frame)
 
         self.setup_ControlPanel_Time(frame)
 
-        frameControlPanel = ttk.LabelFrame(frame, text="Control Panel", padding=10)
+        frameControlPanel = ttk.LabelFrame(frame, text="Actions", padding=10)
         frameControlPanel.pack(fill=tk.X, pady=5)
 
         ttk.Button(frameControlPanel,
                    text="Supprimer Sélection",
                    command=self.deleteSelected
                    ).pack(fill=tk.X, pady=2)
-
-        frameInfo = ttk.LabelFrame(frame,
-                                   text="Info",
-                                   padding=10)
-        frameInfo.pack(fill=tk.BOTH, expand=True, pady=5)
-        self.infoText = tk.Text(frameInfo, height=15, width=30)
-        self.infoText.pack(fill=tk.BOTH, expand=True)
 
     def setup_ControlPanel_Character(self, frame):
         self.frameCharacter = ttk.LabelFrame(frame,
@@ -222,27 +254,83 @@ class GraphDraw:
 
         self.updateCharacterCombos()
 
+    def setup_ControlPanel_Interaction(self, frame):
+        """Panneau pour déclencher des interactions entre personnages"""
+        self.frameInteraction = ttk.LabelFrame(frame,
+                                               text="Interaction",
+                                               padding=10)
+        self.frameInteraction.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(self.frameInteraction,
+                  text="Acteur :"
+                  ).grid(row=0, column=0, sticky=tk.W, pady=2)
+        self.varInteractionActor = tk.StringVar()
+        self.comboInteractionActor = ttk.Combobox(self.frameInteraction, 
+                                                  textvariable=self.varInteractionActor,
+                                                  width=17)
+        self.comboInteractionActor.grid(row=0, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
+        
+        ttk.Label(self.frameInteraction,
+                  text="Cible :"
+                  ).grid(row=1, column=0, sticky=tk.W, pady=2)
+        self.varInteractionTarget = tk.StringVar()
+        self.comboInteractionTarget = ttk.Combobox(self.frameInteraction, 
+                                                   textvariable=self.varInteractionTarget,
+                                                   width=17)
+        self.comboInteractionTarget.grid(row=1, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
+        
+        ttk.Label(self.frameInteraction,
+                  text="Type :"
+                  ).grid(row=2, column=0, sticky=tk.W, pady=2)
+        self.varInteractionType = tk.StringVar(value="helped")
+        self.comboInteractionType = ttk.Combobox(self.frameInteraction, 
+                                                 textvariable=self.varInteractionType,
+                                                 values=["helped", "hugged", "kissed", "praised", "comforted",
+                                                        "insulted", "threatened", "laughed at", "ignored", "killed"],
+                                                 state="readonly", width=17)
+        self.comboInteractionType.grid(row=2, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
+        
+        # Bouton pour déclencher l'interaction
+        ttk.Button(self.frameInteraction,
+                  text="Déclencher Interaction",
+                  command=self.triggerInteraction
+                  ).grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=5)
+        
+        self.frameInteraction.columnconfigure(1, weight=1)
+        
+        # Initialiser les listes de personnages
+        self.updateCharacterCombos()
+
     def updateCharacterCombos(self):
         characters = self.graph.getNodeNames()
         self.comboSource['values'] = characters
         self.comboTarget['values'] = characters
+        # Mettre à jour aussi les combos d'interactions si ils existent
+        if hasattr(self, 'comboInteractionActor'):
+            self.comboInteractionActor['values'] = characters
+        if hasattr(self, 'comboInteractionTarget'):
+            self.comboInteractionTarget['values'] = characters
 
     def deleteSelected(self):
         if self.selectedRelationship:
             source, target = self.selectedRelationship
             self.graph.removeEdge(source, target)
             self.selectedRelationship = None
-            self.pos = None  # Forcer le recalcul du layout
+            # Pas besoin de recalculer le layout pour une arête
             self.showInfo(f"Relation entre {source} et {target} supprimée")
         elif self.selectedCharacter:
             character = self.graph.getNode(self.selectedCharacter)
             if character:
+                # Supprimer la position du cache avant de supprimer le noeud
+                if self.pos and self.selectedCharacter in self.pos:
+                    del self.pos[self.selectedCharacter]
                 self.graph.removeNode(character)
                 self.showInfo("Personnage supprimé")
             else:
                 self.showInfo("Erreur: Personnage introuvable")
             self.selectedCharacter = None
-            self.pos = None  # Forcer le recalcul du layout
+            # Forcer le recalcul du layout après suppression d'un noeud
+            self.pos = None
         else:
             self.showInfo("Aucun élément sélectionné")
 
@@ -417,7 +505,80 @@ class GraphDraw:
         self.pos = None  # Forcer le recalcul du layout
         self.clearForm()
         self.drawGraph()
-        self.showInfo(f"Relation '{typeRelationship.nom}' entre '{source}' et '{target}'")
+        self.showInfo(f"Relation '{typeRelationship}' entre '{source}' et '{target}'")
+
+    def triggerInteraction(self):
+        """Déclenche une interaction entre deux personnages"""
+        actorName = self.varInteractionActor.get()
+        targetName = self.varInteractionTarget.get()
+        interactionType = self.varInteractionType.get()
+        
+        if not actorName or not targetName:
+            self.showInfo("Erreur: Sélectionner un acteur et une cible")
+            return
+        
+        if actorName == targetName:
+            self.showInfo("Erreur: L'acteur et la cible doivent être différents")
+            return
+        
+        actor = self.graph.getNode(actorName)
+        target = self.graph.getNode(targetName)
+        
+        if not actor or not target:
+            self.showInfo("Erreur: Personnage introuvable")
+            return
+        
+        # Récupérer la relation si elle existe
+        relationship = self.graph.getEdge(actorName, targetName)
+        
+        # Créer l'interaction selon le type
+        timestamp = time.time()
+        interaction = None
+        
+        if interactionType == "helped":
+            interaction = Interactions.helped(actor, target, timestamp)
+        elif interactionType == "hugged":
+            interaction = Interactions.hugged(actor, target, timestamp)
+        elif interactionType == "kissed":
+            interaction = Interactions.kissed(actor, target, timestamp)
+        elif interactionType == "praised":
+            interaction = Interactions.praised(actor, target, timestamp)
+        elif interactionType == "comforted":
+            interaction = Interactions.comforted(actor, target, timestamp)
+        elif interactionType == "insulted":
+            interaction = Interactions.insulted(actor, target, timestamp)
+        elif interactionType == "threatened":
+            interaction = Interactions.threatened(actor, target, timestamp)
+        elif interactionType == "laughed at":
+            interaction = Interactions.laughed_at(actor, target, timestamp)
+        elif interactionType == "ignored":
+            interaction = Interactions.ignored(actor, target, timestamp)
+        elif interactionType == "killed":
+            interaction = Interactions.killed(actor, target, timestamp)
+        
+        if interaction:
+            # Afficher le feedback de l'interaction
+            feedback = f"🎭 INTERACTION\n\n"
+            feedback += f"{actor.name} → {target.name}\n"
+            feedback += f"Action: {interactionType}\n\n"
+            feedback += f"Paramètres:\n"
+            feedback += f"  • Agency: {interaction.agency:.2f}\n"
+            feedback += f"  • Communion: {interaction.communion:.2f}\n"
+            feedback += f"  • Intensité: {interaction.intensity:.2f}\n"
+            feedback += f"  • Contact physique: {interaction.physical_contact:.2f}\n"
+            feedback += f"  • Valence: {interaction.valence:.2f}\n"
+            
+            # Si une relation existe, on pourrait l'affecter ici
+            # (à implémenter selon la logique métier)
+            if relationship:
+                feedback += f"\nRelation existante: {relationship.typeRelationship.nom}"
+            
+            self.showInfo(feedback)
+            
+            # Rafraîchir l'affichage si un personnage est sélectionné
+            self.refresh_selected_display()
+        else:
+            self.showInfo(f"Erreur: Type d'interaction '{interactionType}' inconnu")
 
     def updateRelationship(self):
         if not self.selectedRelationship:
@@ -472,7 +633,8 @@ class GraphDraw:
 
         # Recalculer le layout seulement si nécessaire (première fois ou après modification du graphe)
         if self.pos is None or set(self.pos.keys()) != set(self.graph.toNetworkx().nodes()):
-            self.pos = nx.spring_layout(self.graph.toNetworkx(), k=3, iterations=50)
+            # Utiliser une seed fixe pour avoir un layout stable
+            self.pos = nx.spring_layout(self.graph.toNetworkx(), k=3, iterations=50, seed=42)
 
         node_colors = []
         for node in self.graph.toNetworkx().nodes():
