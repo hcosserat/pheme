@@ -25,9 +25,6 @@ else:
 src_root = os.path.dirname(base_path)
 if src_root not in sys.path:
     sys.path.append(src_root)
-print(f"Base path: {base_path}")
-print(f"Python path: {sys.path}")
-
 
 if __name__ == "__main__":
     newgraph = Graph()
