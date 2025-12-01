@@ -7,6 +7,7 @@ from ..Characters.Character import Character
 from ..Characters.Emotions import Emotions
 from ..Interactions.Interaction import Interaction
 from ..Relationships.Relationship import Relationship
+from ..Relationships.TypeRelationship import TypeRelationship
 from ..Universe.Graph import Graph
 
 
@@ -53,8 +54,7 @@ class InteractionsEngine:
         """
         Traite une interaction directe (le personnage est impliqué).
         Met à jour ses émotions et sa relation avec l'autre participant.
-
-        # todo : mettre à jour les relations avec les personnages en relations avec l'autre participant
+        Met également à jour indirectement les relations avec les proches de l'autre participant.
 
         Args:
             character: Le personnage qui traite l'interaction
@@ -74,20 +74,40 @@ class InteractionsEngine:
             interaction_vector = interaction_vector.copy()
             interaction_vector[4] *= self.config.actor_valence_attenuation
 
-        # Mise à jour des émotions
+        # === 1. Mise à jour des émotions ===
         new_emotions_array = self._apply_emotion_change_direct(
             current_emotions, interaction_vector, personality_vector
         )
         self._update_character_emotions(character, new_emotions_array)
 
-        # Mise à jour de la relation avec l'autre personnage, si elle existe
+        # === 2. Mise à jour de la relation directe ===
         relationship = self.graph.getEdge(character.name, other_character.name)
 
-        if relationship is not None:
-            self._update_relationship_direct(character, other_character, relationship, interaction_vector)
-        else:
-            # todo: si elle existe pas, on la crée ?
-            pass
+        if relationship is None:
+            # Création d'une relation neutre (0, 0, 0)
+            new_type = TypeRelationship(0.0, 0.0, 0.0)
+            self.graph.addEdge(character.name, other_character.name, new_type)
+            # Récupération de l'objet Relationship nouvellement créé
+            relationship = self.graph.getEdge(character.name, other_character.name)
+
+        # Mise à jour de la relation maintenant qu'elle existe forcément
+        self._update_relationship_direct(character, other_character, relationship, interaction_vector)
+
+        # === 3. Propagation : Mise à jour des relations associées (TODO traité) ===
+        # On impacte légèrement les relations avec les "voisins" de l'autre personnage.
+        # Ex: Si A frappe B, et que A connait C (qui est lié à B), la relation A->C est impactée.
+        neighbors = self.graph.getNeighbors(other_character)
+        for neighbor in neighbors:
+            # On ne se met pas à jour soi-même (si on est dans les voisins de l'autre)
+            if neighbor.name == character.name:
+                continue
+
+            # On cherche si 'character' a une relation avec ce 'neighbor'
+            rel_with_neighbor = self.graph.getEdge(character.name, neighbor.name)
+
+            if rel_with_neighbor is not None:
+                # On applique un changement indirect (atténué)
+                self._update_relationship_indirect(character, rel_with_neighbor, interaction_vector)
 
     def _process_indirect_interaction(self, character: Character, interaction: Interaction,
                                       has_relation_with_actor: bool, has_relation_with_target: bool):
@@ -209,8 +229,6 @@ class InteractionsEngine:
         """
         Un Character diffuse une information sur une Interaction à ses voisins.
         Les voisins qui apprennent l'interaction pour la première fois la traitent.
-
-        todo: pour l'instant ça diffuse juste aux voisins, voir si on peut améliorer ça
 
         Args:
             source: Le personnage qui diffuse l'information
