@@ -211,27 +211,21 @@ class GraphDraw:
         self.frameCharacter.columnconfigure(1, weight=1)
 
     def setup_ControlPanel_Relationship(self, frame):
-        self.frameRelationship = ttk.LabelFrame(frame,
-                                                text="Relation",
-                                                padding=10)
+        self.frameRelationship = ttk.LabelFrame(frame, text="Relation", padding=10)
         self.frameRelationship.pack(fill=tk.X, pady=5)
-        ttk.Label(self.frameRelationship,
-                  text="Source :"
-                  ).grid(row=0, column=0, sticky=tk.W, pady=2)
+
+        ttk.Label(self.frameRelationship, text="Source :").grid(row=0, column=0, sticky=tk.W, pady=2)
         self.varSource = tk.StringVar()
-        self.comboSource = ttk.Combobox(self.frameRelationship, textvariable=self.varSource,
-                                        width=17)
+        self.comboSource = ttk.Combobox(self.frameRelationship, textvariable=self.varSource, width=17)
         self.comboSource.grid(row=0, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
-        ttk.Label(self.frameRelationship,
-                  text="Target :"
-                  ).grid(row=1, column=0, sticky=tk.W, pady=2)
+
+        ttk.Label(self.frameRelationship, text="Target :").grid(row=1, column=0, sticky=tk.W, pady=2)
         self.varTarget = tk.StringVar()
-        self.comboTarget = ttk.Combobox(self.frameRelationship, textvariable=self.varTarget,
-                                        width=17)
+        self.comboTarget = ttk.Combobox(self.frameRelationship, textvariable=self.varTarget, width=17)
         self.comboTarget.grid(row=1, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
-        ttk.Label(self.frameRelationship,
-                  text="Type :"
-                  ).grid(row=2, column=0, sticky=tk.W, pady=2)
+
+        # Type de relation
+        ttk.Label(self.frameRelationship, text="Type :").grid(row=2, column=0, sticky=tk.W, pady=2)
         self.varType = tk.StringVar(value="Ami proche")
         self.comboType = ttk.Combobox(self.frameRelationship, textvariable=self.varType,
                                       values=["Amour", "Ami proche", "Amour naissant", "Collègue proche",
@@ -240,8 +234,15 @@ class GraphDraw:
                                       state="readonly", width=17)
         self.comboType.grid(row=2, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
 
+        ttk.Label(self.frameRelationship, text="Dist. Info :").grid(row=3, column=0, sticky=tk.W, pady=2)
+        self.varDistance = tk.IntVar(value=1)
+        self.spinDistance = tk.Spinbox(self.frameRelationship, from_=1, to=100,
+                                       textvariable=self.varDistance, width=16)
+        self.spinDistance.grid(row=3, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
+
         self.frameRelationship_btnRelationship = ttk.Frame(self.frameRelationship)
-        self.frameRelationship_btnRelationship.grid(rows=2, column=0, columnspan=2, sticky=tk.EW, pady=5)
+        self.frameRelationship_btnRelationship.grid(row=4, column=0, columnspan=2, sticky=tk.EW, pady=5)
+
         self.btnRelationship_add = ttk.Button(self.frameRelationship_btnRelationship,
                                               text="New Relation",
                                               command=self.createRelationship)
@@ -258,50 +259,114 @@ class GraphDraw:
 
     def setup_ControlPanel_Interaction(self, frame):
         """Panneau pour déclencher des interactions entre personnages"""
-        self.frameInteraction = ttk.LabelFrame(frame,
-                                               text="Interaction",
-                                               padding=10)
+        self.frameInteraction = ttk.LabelFrame(frame, text="Interaction", padding=10)
         self.frameInteraction.pack(fill=tk.X, pady=5)
 
         ttk.Label(self.frameInteraction,
                   text="Acteur :"
                   ).grid(row=0, column=0, sticky=tk.W, pady=2)
         self.varInteractionActor = tk.StringVar()
-        self.comboInteractionActor = ttk.Combobox(self.frameInteraction,
-                                                  textvariable=self.varInteractionActor,
-                                                  width=17)
+        self.comboInteractionActor = ttk.Combobox(self.frameInteraction, textvariable=self.varInteractionActor, width=17)
         self.comboInteractionActor.grid(row=0, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
 
-        ttk.Label(self.frameInteraction,
-                  text="Cible :"
-                  ).grid(row=1, column=0, sticky=tk.W, pady=2)
+        ttk.Label(self.frameInteraction, text="Cible :").grid(row=1, column=0, sticky=tk.W, pady=2)
         self.varInteractionTarget = tk.StringVar()
-        self.comboInteractionTarget = ttk.Combobox(self.frameInteraction,
-                                                   textvariable=self.varInteractionTarget,
-                                                   width=17)
+        self.comboInteractionTarget = ttk.Combobox(self.frameInteraction, textvariable=self.varInteractionTarget, width=17)
         self.comboInteractionTarget.grid(row=1, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
 
-        ttk.Label(self.frameInteraction,
-                  text="Type :"
-                  ).grid(row=2, column=0, sticky=tk.W, pady=2)
+        ttk.Label(self.frameInteraction, text="Type :").grid(row=2, column=0, sticky=tk.W, pady=2)
         self.varInteractionType = tk.StringVar(value="helped")
-        self.comboInteractionType = ttk.Combobox(self.frameInteraction,
-                                                 textvariable=self.varInteractionType,
+        self.comboInteractionType = ttk.Combobox(self.frameInteraction, textvariable=self.varInteractionType,
                                                  values=["helped", "hugged", "kissed", "praised", "comforted",
                                                          "insulted", "threatened", "laughed at", "ignored", "killed"],
                                                  state="readonly", width=17)
         self.comboInteractionType.grid(row=2, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
 
-        # Bouton pour déclencher l'interaction
+        ttk.Label(self.frameInteraction, text="Portée :").grid(row=3, column=0, sticky=tk.W, pady=2)
+        self.varInteractionScope = tk.StringVar(value="Privé (diffusion bouche à oreille)")
+        self.comboInteractionScope = ttk.Combobox(self.frameInteraction,
+                                                  textvariable=self.varInteractionScope,
+                                                  values=["Secret (eux seuls)", "Privé (diffusion bouche à oreille)",
+                                                          "Public (tout le monde)"],
+                                                  state="readonly", width=17)
+        self.comboInteractionScope.grid(row=3, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
+
+        # Bouton
         ttk.Button(self.frameInteraction,
                    text="Déclencher Interaction",
                    command=self.triggerInteraction
-                   ).grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=5)
+                   ).grid(row=4, column=0, columnspan=2, sticky=tk.EW, pady=5)
 
         self.frameInteraction.columnconfigure(1, weight=1)
-
-        # Initialiser les listes de personnages
         self.updateCharacterCombos()
+
+    def triggerInteraction(self):
+        """Déclenche une interaction entre deux personnages"""
+        actorName = self.varInteractionActor.get()
+        targetName = self.varInteractionTarget.get()
+        interactionType = self.varInteractionType.get()
+        scope = self.varInteractionScope.get()  # Récupérer la portée
+
+        if not actorName or not targetName:
+            self.showInfo("Erreur: Sélectionner un acteur et une cible")
+            return
+
+        if actorName == targetName:
+            self.showInfo("Erreur: L'acteur et la cible doivent être différents")
+            return
+
+        actor = self.graph.getNode(actorName)
+        target = self.graph.getNode(targetName)
+
+        if not actor or not target:
+            self.showInfo("Erreur: Personnage introuvable")
+            return
+
+        # Créer l'interaction
+        timestamp = time.time()  # On utilise le temps réel pour l'ID unique, mais la logique est sur les ticks
+        current_tick = self.time_manager.get_current_tick()
+
+        # Mapping simple (à améliorer avec une factory si besoin)
+        interaction_func = getattr(Interactions, interactionType.replace(" ", "_"), None)
+        if not interaction_func:
+            # Fallback pour les noms composés comme "laughed at"
+            if interactionType == "laughed at":
+                interaction_func = Interactions.laughed_at
+            else:
+                self.showInfo(f"Type inconnu: {interactionType}")
+                return
+
+        interaction = interaction_func(actor, target, timestamp)
+
+        # === GESTION DE LA DIFFUSION ET DU TRAITEMENT ===
+
+        # 1. Les participants savent et réagissent TOUJOURS immédiatement
+        actor.learnAboutInteraction(interaction)
+        target.learnAboutInteraction(interaction)
+
+        # Le moteur traite l'impact émotionnel/relationnel direct
+        self.interactionEngine.processInteractionForCharacter(actor, interaction)
+        self.interactionEngine.processInteractionForCharacter(target, interaction)
+
+        # 2. Gestion selon la portée
+        if "Public" in scope:
+            # Tout le monde l'apprend et le traite instantanément
+            self.interactionEngine.processInteractionForAll(interaction)
+            for char in self.graph.listNode:
+                char.learnAboutInteraction(interaction)
+            self.showInfo(f"Information publique : {actor.name} a {interactionType} {target.name}")
+
+        elif "Privé" in scope:
+            # On lance la propagation depuis l'acteur et la cible
+            # Ils vont en parler à leurs voisins, qui recevront l'info dans X ticks
+            self.interactionEngine.diffuseInteraction(actor, interaction, current_tick)
+            self.interactionEngine.diffuseInteraction(target, interaction, current_tick)
+            self.showInfo(f"Information privée : {actor.name} -> {target.name} ({interactionType})")
+
+        else:
+            self.showInfo(f"Information secrète : {actor.name} -> {target.name} ({interactionType})")
+
+        self.refresh_selected_display()
 
     def updateCharacterCombos(self):
         characters = self.graph.getNodeNames()
@@ -340,18 +405,6 @@ class GraphDraw:
         self.clearForm()
         self.updateBtn()
         self.drawGraph()
-
-    def clearForm(self):
-        self.varName.delete(0, tk.END)
-        # Réinitialiser les sliders de personnalité à 0
-        for scale in self.personality_scales.values():
-            scale.set(0.0)
-        # Réinitialiser les sliders d'émotions à 0
-        for scale in self.emotion_scales.values():
-            scale.set(0.0)
-        self.varSource.set('')
-        self.varTarget.set('')
-        self.varType.set("Ami proche")
 
     def updateBtn(self):
         if self.selectedCharacter and self.editMode == 'node':
@@ -470,6 +523,11 @@ class GraphDraw:
         target = self.varTarget.get()
         typeRelationshipText = self.varType.get()
 
+        try:
+            distance = int(self.varDistance.get())
+        except ValueError:
+            distance = 1
+
         if not source or not target:
             self.showInfo("Errer: Select correct personnage source et cible")
             return
@@ -499,88 +557,15 @@ class GraphDraw:
             "Haine": (-0.8, -0.8, -0.8)
         }
 
-        # Créer l'objet TypeRelationship avec les valeurs appropriées
         privacy, commitment, passion = relationship_map.get(typeRelationshipText, (0.6, 0.5, 0.1))
         typeRelationship = TypeRelationship(privacy, commitment, passion)
 
-        self.graph.addEdge(source, target, typeRelationship)
-        self.pos = None  # Forcer le recalcul du layout
+        self.graph.addEdge(source, target, typeRelationship, informational_distance=distance)
+
+        self.pos = None
         self.clearForm()
         self.drawGraph()
-        self.showInfo(f"Relation '{typeRelationship}' entre '{source}' et '{target}'")
-
-    def triggerInteraction(self):
-        """Déclenche une interaction entre deux personnages"""
-        actorName = self.varInteractionActor.get()
-        targetName = self.varInteractionTarget.get()
-        interactionType = self.varInteractionType.get()
-
-        if not actorName or not targetName:
-            self.showInfo("Erreur: Sélectionner un acteur et une cible")
-            return
-
-        if actorName == targetName:
-            self.showInfo("Erreur: L'acteur et la cible doivent être différents")
-            return
-
-        actor = self.graph.getNode(actorName)
-        target = self.graph.getNode(targetName)
-
-        if not actor or not target:
-            self.showInfo("Erreur: Personnage introuvable")
-            return
-
-        # Récupérer la relation si elle existe
-        relationship = self.graph.getEdge(actorName, targetName)
-
-        # Créer l'interaction selon le type
-        timestamp = time.time()
-        interaction = None
-
-        if interactionType == "helped":
-            interaction = Interactions.helped(actor, target, timestamp)
-        elif interactionType == "hugged":
-            interaction = Interactions.hugged(actor, target, timestamp)
-        elif interactionType == "kissed":
-            interaction = Interactions.kissed(actor, target, timestamp)
-        elif interactionType == "praised":
-            interaction = Interactions.praised(actor, target, timestamp)
-        elif interactionType == "comforted":
-            interaction = Interactions.comforted(actor, target, timestamp)
-        elif interactionType == "insulted":
-            interaction = Interactions.insulted(actor, target, timestamp)
-        elif interactionType == "threatened":
-            interaction = Interactions.threatened(actor, target, timestamp)
-        elif interactionType == "laughed at":
-            interaction = Interactions.laughed_at(actor, target, timestamp)
-        elif interactionType == "ignored":
-            interaction = Interactions.ignored(actor, target, timestamp)
-        elif interactionType == "killed":
-            interaction = Interactions.killed(actor, target, timestamp)
-
-        if interaction:
-            # Afficher le feedback de l'interaction
-            feedback = f"🎭 INTERACTION\n\n"
-            feedback += f"{actor.name} → {target.name}\n"
-            feedback += f"Action: {interactionType}\n\n"
-            feedback += f"Paramètres:\n"
-            feedback += f"  • Agency: {interaction.agency:.2f}\n"
-            feedback += f"  • Communion: {interaction.communion:.2f}\n"
-            feedback += f"  • Intensité: {interaction.intensity:.2f}\n"
-            feedback += f"  • Contact physique: {interaction.physical_contact:.2f}\n"
-            feedback += f"  • Valence: {interaction.valence:.2f}\n"
-
-            # Si une relation existe, on pourrait l'affecter ici
-            # (à implémenter selon la logique métier)
-            if relationship:
-                feedback += f"\nRelation existante: {relationship.typeRelationship.nom}"
-
-            self.showInfo(feedback)
-
-            # Rafraîchir l'affichage si un personnage est sélectionné
-            self.refresh_selected_display()
-        else:
-            self.showInfo(f"Erreur: Type d'interaction '{interactionType}' inconnu")
+        self.showInfo(f"Relation '{typeRelationship}' (Dist: {distance}) entre '{source}' et '{target}'")
 
     def updateRelationship(self):
         if not self.selectedRelationship:
@@ -589,15 +574,21 @@ class GraphDraw:
 
         source, target = self.selectedRelationship
         typeRelationshipText = self.varType.get()
+
+        try:
+            distance = int(self.varDistance.get())
+        except ValueError:
+            distance = 1
+
         if not typeRelationshipText:
             self.showInfo("Errevr: Il faut un type de relation")
             return
 
-        if not self.graph.getEdge(source, target):
+        edge = self.graph.getEdge(source, target)
+        if not edge:
             self.showInfo("Erreer: Relation introuvable")
             return
 
-        # Mapper le nom sélectionné vers les valeurs appropriées
         relationship_map = {
             "Amour": (0.8, 0.7, 0.9),
             "Ami proche": (0.6, 0.5, 0.1),
@@ -611,18 +602,27 @@ class GraphDraw:
             "Haine": (-0.8, -0.8, -0.8)
         }
 
-        # Créer l'objet TypeRelationship avec les valeurs appropriées
         privacy, commitment, passion = relationship_map.get(typeRelationshipText, (0.6, 0.5, 0.1))
+
+        # Mise à jour des valeurs
         typeRelationship = TypeRelationship(privacy, commitment, passion)
 
+        # On met à jour l'objet Relationship directement via le Graph
+        # (Comme updateEdge supprime et recrée, on utilise la méthode du graphe)
         self.graph.updateEdge(source, target, typeRelationship)
+
+        # updateEdge dans Graph.py supprime et recrée l'arête.
+        # Il faut donc réappliquer la distance sur la nouvelle arête créée.
+        new_edge = self.graph.getEdge(source, target)
+        if new_edge:
+            new_edge.informational_distance = distance
 
         self.selectedRelationship = None
         self.editMode = None
         self.clearForm()
         self.updateBtn()
         self.drawGraph()
-        self.showInfo(f"Relation '{typeRelationship}' entre '{source}' et '{target}'")
+        self.showInfo(f"Relation '{typeRelationship}' (Dist: {distance}) MAJ")
 
     def drawGraph(self):
         self.ax.clear()
@@ -756,15 +756,31 @@ class GraphDraw:
         self.selectedCharacter = None
         self.editMode = 'edge'
         source, target = edge
-        if self.graph.getEdge(source, target):
+
+        relationship = self.graph.getEdge(source, target)
+        if relationship:
             self.varSource.set(source)
             self.varTarget.set(target)
 
-            rel = self.graph.getEdge(source, target).typeRelationship
+            rel_type = relationship.typeRelationship
+            self.varType.set(rel_type.nom if hasattr(rel_type, 'nom') else "Ami proche")
 
-            self.varType.set(rel.nom if hasattr(rel, 'nom') else "Ami proche")
+            # AJOUT : Chargement de la distance
+            self.varDistance.set(relationship.informational_distance)
+
         self.updateBtn()
         self.displayEdgeInfo(edge)
+
+    def clearForm(self):
+        self.varName.delete(0, tk.END)
+        for scale in self.personality_scales.values():
+            scale.set(0.0)
+        for scale in self.emotion_scales.values():
+            scale.set(0.0)
+        self.varSource.set('')
+        self.varTarget.set('')
+        self.varType.set("Ami proche")
+        self.varDistance.set(1)
 
     def findNode(self, x, y):
         """Trouve un nœud à la position donnée"""
@@ -815,6 +831,19 @@ class GraphDraw:
         info += f"Emotions: {character.emotions}\n"
         info += f"Personnalité: {character.personality}\n"
 
+        # Affichage des interactions connues (Les 5 dernières)
+        info += f"\nMémoire (Derniers événements appris):\n"
+        if character.knownInteractions:
+            # On trie par timestamp inverse pour avoir les plus récents
+            sorted_interactions = sorted(list(character.knownInteractions),
+                                         key=lambda x: x.timestamp, reverse=True)
+
+            for interaction in sorted_interactions[:5]:
+                # Petit formatage : "Alice -> Bob : helped"
+                info += f"• {interaction.actor.name} {interaction.description} {interaction.target.name}\n"
+        else:
+            info += "(Aucune interaction connue)\n"
+
         outgoing = [edge for edge in self.graph.listEdge if edge.source == character]
         if outgoing:
             info += f"\nRelations sortantes:\n"
@@ -833,6 +862,8 @@ class GraphDraw:
         info += f"De: {source}\n"
         info += f"Vers: {target}\n"
         info += f"Type: {relationship.typeRelationship}\n"
+        info += f"Distance informationnelle: {relationship.informational_distance} tick(s)\n"
+        info += f"Confiance: {relationship.confidence:.1f}%\n"
 
         self.showInfo(info)
 
@@ -911,12 +942,16 @@ class GraphDraw:
     def on_tick(self, tick: int):
         """
         Appelé à chaque tick.
-        Fait évoluer les personnages et relations via le EvolutionManager.
+        Fait évoluer les personnages, relations et propage les interactions.
         """
-        # Faire évoluer tous les aspects (émotions, personnalités, relations)
+        # 1. Évolution naturelle (émotions qui descendent, traits qui bougent...)
         self.evolution_manager.evolve()
 
-        # Mettre à jour l'interface
+        # 2. Moteur d'interactions (Diffusion des rumeurs/infos)
+        # C'est ici que les informations "arrivent" après avoir parcouru la distance
+        self.interactionEngine.tick(tick)
+
+        # 3. Mettre à jour l'interface
         self.update_time_status()
         self.refresh_selected_display()
 
