@@ -159,7 +159,8 @@ class GraphDraw:
                                    text="Informations",
                                    padding=10)
         frameInfo.pack(fill=tk.BOTH, expand=True, pady=5)
-        self.infoText = tk.Text(frameInfo, height=15, width=30)
+        # Make info text read-only
+        self.infoText = tk.Text(frameInfo, height=15, width=30, state="disabled")
         self.infoText.pack(fill=tk.BOTH, expand=True)
 
     def setup_ControlPanel_Right(self, frame):
@@ -835,9 +836,9 @@ class GraphDraw:
 
     def findNode(self, x, y):
         """Trouve un nœud à la position donnée"""
-        if not hasattr(self, 'pos') or x is None or y is None:
+        # Guard against missing positions or invalid click coords
+        if not hasattr(self, 'pos') or self.pos is None or x is None or y is None:
             return None
-
         for node, (node_x, node_y) in self.pos.items():
             distance = math.sqrt((node_x - x) ** 2 + (node_y - y) ** 2)
             if distance < 0.1:
@@ -920,11 +921,16 @@ class GraphDraw:
         self.showInfo(info)
 
     def showInfo(self, text):
+        # Enable temporarily to update, then disable to keep read-only
+        self.infoText.config(state="normal")
         self.infoText.delete(1.0, tk.END)
         self.infoText.insert(1.0, text)
+        self.infoText.config(state="disabled")
 
     def clearInfo(self):
+        self.infoText.config(state="normal")
         self.infoText.delete(1.0, tk.END)
+        self.infoText.config(state="disabled")
 
     # Methode de la gestion du temps
     def setup_ControlPanel_Time(self, frame):
