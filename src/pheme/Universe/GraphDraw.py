@@ -22,9 +22,38 @@ class GraphDraw:
     Classe de d'interface utilisateur graphique pour le graphe de relation
     """
 
+    # Dictionnaire de traduction des interactions (Français -> Anglais pour les fonctions)
+    INTERACTION_TRANSLATIONS = {
+        "a aidé": "helped",
+        "a enlacé": "hugged",
+        "a embrassé": "kissed",
+        "a complimenté": "praised",
+        "a réconforté": "comforted",
+        "a insulté": "insulted",
+        "a menacé": "threatened",
+        "s'est moqué de": "laughed_at",
+        "a ignoré": "ignored",
+        "a tué": "killed"
+    }
+
+    # Dictionnaire inverse pour l'affichage (Anglais -> Français)
+    INTERACTION_DISPLAY = {
+        "helped": "a aidé",
+        "hugged": "a enlacé",
+        "kissed": "a embrassé",
+        "praised": "a complimenté",
+        "comforted": "a réconforté",
+        "insulted": "a insulté",
+        "threatened": "a menacé",
+        "laughed_at": "s'est moqué de",
+        "laughed at": "s'est moqué de",
+        "ignored": "a ignoré",
+        "killed": "a tué"
+    }
+
     def __init__(self, master, graph: Graph):
         self.master = master
-        self.master.title("Editeur de Graphe de Relations")
+        self.master.title("Phēmē")
 
         self.graph = graph
         self.interactionEngine = InteractionsEngine(graph)
@@ -199,7 +228,7 @@ class GraphDraw:
         self.frameCharacter_btnCharacter = ttk.Frame(self.frameCharacter)
         self.frameCharacter_btnCharacter.grid(row=row, column=0, columnspan=3, sticky=tk.EW, pady=5)
         self.btnCharacter_add = ttk.Button(self.frameCharacter_btnCharacter,
-                                           text="New Perso",
+                                           text="Nouv Perso",
                                            command=self.createCharacter)
         self.btnCharacter_add.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(2, 0))
         self.btnCharacter_update = ttk.Button(self.frameCharacter_btnCharacter,
@@ -214,12 +243,12 @@ class GraphDraw:
         self.frameRelationship = ttk.LabelFrame(frame, text="Relation", padding=10)
         self.frameRelationship.pack(fill=tk.X, pady=5)
 
-        ttk.Label(self.frameRelationship, text="Source :").grid(row=0, column=0, sticky=tk.W, pady=2)
+        ttk.Label(self.frameRelationship, text="Perso A :").grid(row=0, column=0, sticky=tk.W, pady=2)
         self.varSource = tk.StringVar()
         self.comboSource = ttk.Combobox(self.frameRelationship, textvariable=self.varSource, width=17)
         self.comboSource.grid(row=0, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
 
-        ttk.Label(self.frameRelationship, text="Target :").grid(row=1, column=0, sticky=tk.W, pady=2)
+        ttk.Label(self.frameRelationship, text="Perso B :").grid(row=1, column=0, sticky=tk.W, pady=2)
         self.varTarget = tk.StringVar()
         self.comboTarget = ttk.Combobox(self.frameRelationship, textvariable=self.varTarget, width=17)
         self.comboTarget.grid(row=1, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
@@ -244,7 +273,7 @@ class GraphDraw:
         self.frameRelationship_btnRelationship.grid(row=4, column=0, columnspan=2, sticky=tk.EW, pady=5)
 
         self.btnRelationship_add = ttk.Button(self.frameRelationship_btnRelationship,
-                                              text="New Relation",
+                                              text="Nouvelle Relation",
                                               command=self.createRelationship)
         self.btnRelationship_add.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(2, 0))
         self.btnRelationship_update = ttk.Button(self.frameRelationship_btnRelationship,
@@ -275,10 +304,11 @@ class GraphDraw:
         self.comboInteractionTarget.grid(row=1, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
 
         ttk.Label(self.frameInteraction, text="Type :").grid(row=2, column=0, sticky=tk.W, pady=2)
-        self.varInteractionType = tk.StringVar(value="helped")
+        self.varInteractionType = tk.StringVar(value="a aidé")
         self.comboInteractionType = ttk.Combobox(self.frameInteraction, textvariable=self.varInteractionType,
-                                                 values=["helped", "hugged", "kissed", "praised", "comforted",
-                                                         "insulted", "threatened", "laughed at", "ignored", "killed"],
+                                                 values=["a aidé", "a enlacé", "a embrassé", "a complimenté",
+                                                         "a réconforté", "a insulté", "a menacé",
+                                                         "s'est moqué de", "a ignoré", "a tué"],
                                                  state="readonly", width=17)
         self.comboInteractionType.grid(row=2, column=1, sticky=tk.EW, pady=2, padx=(5, 0))
 
@@ -304,7 +334,7 @@ class GraphDraw:
         """Déclenche une interaction entre deux personnages"""
         actorName = self.varInteractionActor.get()
         targetName = self.varInteractionTarget.get()
-        interactionType = self.varInteractionType.get()
+        interactionTypeFr = self.varInteractionType.get()
         scope = self.varInteractionScope.get()  # Récupérer la portée
 
         if not actorName or not targetName:
@@ -326,15 +356,17 @@ class GraphDraw:
         timestamp = time.time()  # On utilise le temps réel pour l'ID unique, mais la logique est sur les ticks
         current_tick = self.time_manager.get_current_tick()
 
-        # Mapping simple (à améliorer avec une factory si besoin)
-        interaction_func = getattr(Interactions, interactionType.replace(" ", "_"), None)
+        # Traduction du type d'interaction français vers le nom de fonction anglais
+        interactionType = self.INTERACTION_TRANSLATIONS.get(interactionTypeFr)
+        if not interactionType:
+            self.showInfo(f"Type d'interaction inconnu: {interactionTypeFr}")
+            return
+
+        # Récupération de la fonction d'interaction
+        interaction_func = getattr(Interactions, interactionType, None)
         if not interaction_func:
-            # Fallback pour les noms composés comme "laughed at"
-            if interactionType == "laughed at":
-                interaction_func = Interactions.laughed_at
-            else:
-                self.showInfo(f"Type inconnu: {interactionType}")
-                return
+            self.showInfo(f"Fonction d'interaction introuvable: {interactionType}")
+            return
 
         interaction = interaction_func(actor, target, timestamp)
 
@@ -354,17 +386,17 @@ class GraphDraw:
             self.interactionEngine.processInteractionForAll(interaction)
             for char in self.graph.listNode:
                 char.learnAboutInteraction(interaction)
-            self.showInfo(f"Information publique : {actor.name} a {interactionType} {target.name}")
+            self.showInfo(f"Information publique : {actor.name} {interactionTypeFr} {target.name}")
 
         elif "Privé" in scope:
             # On lance la propagation depuis l'acteur et la cible
             # Ils vont en parler à leurs voisins, qui recevront l'info dans X ticks
             self.interactionEngine.diffuseInteraction(actor, interaction, current_tick)
             self.interactionEngine.diffuseInteraction(target, interaction, current_tick)
-            self.showInfo(f"Information privée : {actor.name} -> {target.name} ({interactionType})")
+            self.showInfo(f"Information privée : {actor.name} {interactionTypeFr} {target.name}")
 
         else:
-            self.showInfo(f"Information secrète : {actor.name} -> {target.name} ({interactionType})")
+            self.showInfo(f"Information secrète : {actor.name} {interactionTypeFr} {target.name}")
 
         self.refresh_selected_display()
 
@@ -433,11 +465,11 @@ class GraphDraw:
     def createCharacter(self):
         name = self.varName.get().strip()
         if not name:
-            self.showInfo("Err0r: Pas de nom de personnage")
+            self.showInfo("Erreur: Pas de nom de personnage")
             return
 
         if self.graph.getNode(name):
-            self.showInfo(f"Error: Personnage '{name}' existe")
+            self.showInfo(f"Erreur: Personnage '{name}' existe")
             return
 
         # Récupérer les valeurs de personnalité depuis les sliders
@@ -464,11 +496,11 @@ class GraphDraw:
         self.clearForm()
         self.updateCharacterCombos()
         self.drawGraph()
-        self.showInfo(f"Personnage '{name}' build success")
+        self.showInfo(f"Personnage '{name}' créé avec succès")
 
     def updateCharacter(self):
         if not self.selectedCharacter:
-            self.showInfo("Erreur: Pas de personnage selectionné")
+            self.showInfo("Erreur: Pas de personnage sélectionné")
             return
 
         name = self.varName.get().strip()
@@ -512,7 +544,7 @@ class GraphDraw:
         self.updateCharacterCombos()
         self.updateBtn()
         self.drawGraph()
-        self.showInfo(f"Personnage '{name}' MAJ success")
+        self.showInfo(f"Personnage '{name}' mis à jour avec succès")
 
     def createRelationship(self):
         if len(self.graph.listNode) < 2:
@@ -529,19 +561,19 @@ class GraphDraw:
             distance = 1
 
         if not source or not target:
-            self.showInfo("Errer: Select correct personnage source et cible")
+            self.showInfo("Erreur: Sélectionner un personnage source et cible")
             return
 
         if source == target:
-            self.showInfo("ErReur: Select differents personnages")
+            self.showInfo("Erreur: Sélectionner des personnages différents")
             return
 
         if not typeRelationshipText:
-            self.showInfo("Errevr: Il faut un type de relation")
+            self.showInfo("Erreur: Il faut un type de relation")
             return
 
         if self.graph.getEdge(source, target):
-            self.showInfo(f"ErrEur: Relation existe entre {source} et {target}")
+            self.showInfo(f"Erreur: Relation existe entre {source} et {target}")
             return
 
         relationship_map = {
@@ -569,7 +601,7 @@ class GraphDraw:
 
     def updateRelationship(self):
         if not self.selectedRelationship:
-            self.showInfo("€reur: Relation pas Select")
+            self.showInfo("Erreur: Relation non sélectionnée")
             return
 
         source, target = self.selectedRelationship
@@ -581,12 +613,12 @@ class GraphDraw:
             distance = 1
 
         if not typeRelationshipText:
-            self.showInfo("Errevr: Il faut un type de relation")
+            self.showInfo("Erreur: Il faut un type de relation")
             return
 
         edge = self.graph.getEdge(source, target)
         if not edge:
-            self.showInfo("Erreer: Relation introuvable")
+            self.showInfo("Erreur: Relation introuvable")
             return
 
         relationship_map = {
@@ -622,13 +654,13 @@ class GraphDraw:
         self.clearForm()
         self.updateBtn()
         self.drawGraph()
-        self.showInfo(f"Relation '{typeRelationship}' (Dist: {distance}) MAJ")
+        self.showInfo(f"Relation '{typeRelationship}' (Dist: {distance}) mise à jour")
 
     def drawGraph(self):
         self.ax.clear()
 
         if not self.graph.listNode:
-            self.ax.text(0.5, 0.5, "Y a rien dans l'univers",
+            self.ax.text(0.5, 0.5, "Il n'y a rien dans l'univers !",
                          ha='center', va='center', transform=self.ax.transAxes)
             self.canvas.draw()
             return
@@ -839,8 +871,9 @@ class GraphDraw:
                                          key=lambda x: x.timestamp, reverse=True)
 
             for interaction in sorted_interactions[:5]:
-                # Petit formatage : "Alice -> Bob : helped"
-                info += f"• {interaction.actor.name} {interaction.description} {interaction.target.name}\n"
+                # Traduction de la description en français
+                description_fr = self.INTERACTION_DISPLAY.get(interaction.description, interaction.description)
+                info += f"• {interaction.actor.name} {description_fr} {interaction.target.name}\n"
         else:
             info += "(Aucune interaction connue)\n"
 
@@ -889,13 +922,13 @@ class GraphDraw:
         btn_frame = ttk.Frame(self.frameTime)
         btn_frame.pack(fill=tk.X, pady=5)
 
-        self.btn_play = ttk.Button(btn_frame, text="▶ Play", command=self.start_time)
+        self.btn_play = ttk.Button(btn_frame, text="▶ Démarrer", command=self.start_time)
         self.btn_play.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
         self.btn_pause = ttk.Button(btn_frame, text="⏸ Pause", command=self.pause_time, state="disabled")
         self.btn_pause.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
-        ttk.Button(btn_frame, text="⏹ Reset", command=self.reset_time).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        ttk.Button(btn_frame, text="⏹ Réinitialiser", command=self.reset_time).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
         # Contrôle de vitesse
         ttk.Label(self.frameTime, text="Vitesse (secondes/tick):").pack(pady=(10, 2))
@@ -961,7 +994,7 @@ class GraphDraw:
 
     def update_time_status(self):
         """Met à jour l'affichage du statut temporel."""
-        status = "▶ Running" if self.time_manager.is_running else "⏸ Pause"
+        status = "▶ En cours" if self.time_manager.is_running else "⏸ Pause"
         tick = self.time_manager.get_current_tick()
         self.time_status_var.set(f"{status} | Tick: {tick}")
 
