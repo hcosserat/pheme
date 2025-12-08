@@ -71,6 +71,9 @@ class GraphDraw:
         # Gestionnaire d'évolution
         self.evolution_manager = EvolutionManager(self.graph)
 
+        # Bind ESC pour désélectionner
+        self.master.bind('<Escape>', self.on_escape)
+
         self.setupUserInterface()
         self.start_time_loop()  # Démarrer la boucle temporelle
 
@@ -839,9 +842,11 @@ class GraphDraw:
         # Guard against missing positions or invalid click coords
         if not hasattr(self, 'pos') or self.pos is None or x is None or y is None:
             return None
+        # Seuil plus petit pour éviter la sélection involontaire
+        threshold = 0.03
         for node, (node_x, node_y) in self.pos.items():
             distance = math.sqrt((node_x - x) ** 2 + (node_y - y) ** 2)
-            if distance < 0.1:
+            if distance < threshold:
                 return node
         return None
 
@@ -1053,3 +1058,13 @@ class GraphDraw:
             self.master.after(100, time_loop)
 
         time_loop()
+
+    def on_escape(self, event=None):
+        """Désélectionne tout (touche Échap)."""
+        self.selectedRelationship = None
+        self.selectedCharacter = None
+        self.editMode = None
+        self.updateBtn()
+        self.clearInfo()
+        self.drawGraph()
+
