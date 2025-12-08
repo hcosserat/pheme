@@ -38,7 +38,9 @@ class EvolutionManager:
 
         if random.random() < probability:
             typeRelationship = self.getTypeRelationship(relationshipA, relationshipB, characterA, characterB)
-            self.graph.addEdge(nameA, nameB, typeRelationship)
+            info_dist = max(getattr(relationshipA, 'informational_distance', 1),
+                            getattr(relationshipB, 'informational_distance', 1))
+            self.graph.addEdge(nameA, nameB, typeRelationship, informational_distance=info_dist)
             self.updateEmotionRelationship(nameA, nameB, typeRelationship)
 
     def getProbaRelationship(self, relationshipA, relationshipB, characterA, characterB):
