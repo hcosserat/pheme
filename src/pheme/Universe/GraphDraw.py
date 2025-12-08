@@ -54,6 +54,8 @@ class GraphDraw:
     def __init__(self, master, graph: Graph):
         self.master = master
         self.master.title("Phēmē")
+        # Maximiser la fenêtre au démarrage (macOS-safe)
+        self.maximize_window()
 
         self.graph = graph
         self.interactionEngine = InteractionsEngine(graph)
@@ -73,16 +75,23 @@ class GraphDraw:
         self.start_time_loop()  # Démarrer la boucle temporelle
 
     def setupUserInterface(self):
+        # Utiliser grid pour un layout 1/3/1
+        self.master.grid_rowconfigure(0, weight=1)
+        self.master.grid_columnconfigure(0, weight=1)
+
         mainFrame = ttk.Frame(self.master)
-        mainFrame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        mainFrame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        mainFrame.grid_rowconfigure(0, weight=1)
+        mainFrame.grid_columnconfigure(0, weight=1)
+        mainFrame.grid_columnconfigure(1, weight=3)
+        mainFrame.grid_columnconfigure(2, weight=1)
 
         # Frame de gauche avec scrollbar (Personnages)
-        leftFrame = ttk.Frame(mainFrame, width=300)
-        leftFrame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 10))
-        leftFrame.pack_propagate(False)
+        leftFrame = ttk.Frame(mainFrame)
+        leftFrame.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
 
         # Canvas avec scrollbar pour le panneau de contrôle gauche
-        canvas = tk.Canvas(leftFrame, width=380)
+        canvas = tk.Canvas(leftFrame)
         scrollbar = ttk.Scrollbar(leftFrame, orient="vertical", command=canvas.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -102,15 +111,14 @@ class GraphDraw:
 
         # Frame centrale pour le graphe
         graphFrame = ttk.Frame(mainFrame)
-        graphFrame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        graphFrame.grid(row=0, column=1, sticky="nsew")
 
         # Frame de droite avec scrollbar (Relations et Temps)
-        rightFrame = ttk.Frame(mainFrame, width=400)
-        rightFrame.pack(side=tk.RIGHT, fill=tk.BOTH, padx=(10, 0))
-        rightFrame.pack_propagate(False)
+        rightFrame = ttk.Frame(mainFrame)
+        rightFrame.grid(row=0, column=2, sticky="nsew", padx=(10, 0))
 
         # Canvas avec scrollbar pour le panneau de contrôle droit
-        canvas_right = tk.Canvas(rightFrame, width=380)
+        canvas_right = tk.Canvas(rightFrame)
         scrollbar_right = ttk.Scrollbar(rightFrame, orient="vertical", command=canvas_right.yview)
         scrollbar_right.pack(side=tk.RIGHT, fill=tk.Y)
         canvas_right.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -131,6 +139,17 @@ class GraphDraw:
         self.setup_ControlPanel_Left(controlFrameLeft)
         self.setup_ControlPanel_Right(controlFrameRight)
         self.setupGraph(graphFrame)
+
+    def maximize_window(self):
+        # Routine de maximisation compatible macOS
+        self.master.update_idletasks()
+        try:
+            self.master.state('zoomed')
+        except tk.TclError:
+            # Fallback: occuper tout l'écran
+            screen_width = self.master.winfo_screenwidth()
+            screen_height = self.master.winfo_screenheight()
+            self.master.geometry(f"{screen_width}x{screen_height}+0+0")
 
     def setup_ControlPanel_Left(self, frame):
         """Panneau de gauche : Personnages et Informations"""
