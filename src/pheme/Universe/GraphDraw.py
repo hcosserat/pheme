@@ -18,11 +18,9 @@ from ..Relationships.TypeRelationship import TypeRelationship
 
 
 class GraphDraw:
-    """
-    Classe de d'interface utilisateur graphique pour le graphe de relation
-    """
+    """Interface graphique pour le graph de relations."""
 
-    # Dictionnaire de traduction des interactions (Français -> Anglais pour les fonctions)
+    # Traductions interactions (Français -> Anglais pour les fonctions)
     INTERACTION_TRANSLATIONS = {
         "a aidé": "helped",
         "a enlacé": "hugged",
@@ -78,7 +76,7 @@ class GraphDraw:
         self.start_time_loop()  # Démarrer la boucle temporelle
 
     def setupUserInterface(self):
-        # Utiliser grid pour un layout 1/3/1
+        # Layout 1/3/1 avec grid
         self.master.grid_rowconfigure(0, weight=1)
         self.master.grid_columnconfigure(0, weight=1)
 
@@ -89,11 +87,11 @@ class GraphDraw:
         mainFrame.grid_columnconfigure(1, weight=3)
         mainFrame.grid_columnconfigure(2, weight=1)
 
-        # Frame de gauche avec scrollbar (Personnages)
+        # Frame de gauche avec scrollbar
         leftFrame = ttk.Frame(mainFrame)
         leftFrame.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
 
-        # Canvas avec scrollbar pour le panneau de contrôle gauche
+        # Canvas avec scrollbar pour panneau gauche
         canvas = tk.Canvas(leftFrame)
         scrollbar = ttk.Scrollbar(leftFrame, orient="vertical", command=canvas.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -104,7 +102,7 @@ class GraphDraw:
         controlFrameLeft = ttk.Frame(canvas)
         canvas_window = canvas.create_window((0, 0), window=controlFrameLeft, anchor="nw")
 
-        # Mise à jour de la zone scrollable
+        # Update de la zone scrollable
         def configure_scroll(event):
             canvas.configure(scrollregion=canvas.bbox("all"))
             canvas.itemconfig(canvas_window, width=event.width)
@@ -112,15 +110,15 @@ class GraphDraw:
         controlFrameLeft.bind("<Configure>", configure_scroll)
         canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_window, width=e.width))
 
-        # Frame centrale pour le graphe
+        # Frame centrale pour le graph
         graphFrame = ttk.Frame(mainFrame)
         graphFrame.grid(row=0, column=1, sticky="nsew")
 
-        # Frame de droite avec scrollbar (Relations et Temps)
+        # Frame de droite avec scrollbar
         rightFrame = ttk.Frame(mainFrame)
         rightFrame.grid(row=0, column=2, sticky="nsew", padx=(10, 0))
 
-        # Canvas avec scrollbar pour le panneau de contrôle droit
+        # Canvas avec scrollbar pour panneau droit
         canvas_right = tk.Canvas(rightFrame)
         scrollbar_right = ttk.Scrollbar(rightFrame, orient="vertical", command=canvas_right.yview)
         scrollbar_right.pack(side=tk.RIGHT, fill=tk.Y)
@@ -131,7 +129,7 @@ class GraphDraw:
         controlFrameRight = ttk.Frame(canvas_right)
         canvas_right_window = canvas_right.create_window((0, 0), window=controlFrameRight, anchor="nw")
 
-        # Mise à jour de la zone scrollable droite
+        # Update de la zone scrollable droite
         def configure_scroll_right(event):
             canvas_right.configure(scrollregion=canvas_right.bbox("all"))
             canvas_right.itemconfig(canvas_right_window, width=event.width)
@@ -144,7 +142,7 @@ class GraphDraw:
         self.setupGraph(graphFrame)
 
     def maximize_window(self):
-        # Routine de maximisation compatible macOS
+        # Maximisation compatible macOS
         self.master.update_idletasks()
         try:
             self.master.state('zoomed')
@@ -155,19 +153,19 @@ class GraphDraw:
             self.master.geometry(f"{screen_width}x{screen_height}+0+0")
 
     def setup_ControlPanel_Left(self, frame):
-        """Panneau de gauche : Personnages et Informations"""
+        """Panneau gauche : Characters et Infos."""
         self.setup_ControlPanel_Character(frame)
 
         frameInfo = ttk.LabelFrame(frame,
                                    text="Informations",
                                    padding=10)
         frameInfo.pack(fill=tk.BOTH, expand=True, pady=5)
-        # Make info text read-only
+        # Text read-only
         self.infoText = tk.Text(frameInfo, height=15, width=30, state="disabled")
         self.infoText.pack(fill=tk.BOTH, expand=True)
 
     def setup_ControlPanel_Right(self, frame):
-        """Panneau de droite : Relations, Interactions, Contrôle Temporel et Actions"""
+        """Panneau droit : Relations, Interactions, Contrôle Temporel et Actions."""
         self.setup_ControlPanel_Relationship(frame)
 
         self.setup_ControlPanel_Interaction(frame)
@@ -188,19 +186,19 @@ class GraphDraw:
                                              padding=10)
         self.frameCharacter.pack(fill=tk.X, pady=5)
 
-        # Nom du personnage
+        # Nom du character
         ttk.Label(self.frameCharacter,
                   text="Nom"
                   ).grid(row=0, column=0, sticky=tk.W, pady=2)
         self.varName = ttk.Entry(self.frameCharacter, width=20)
         self.varName.grid(row=0, column=1, columnspan=2, sticky=tk.EW, pady=2, padx=(5, 0))
 
-        # Séparateur Personnalité
+        # Séparateur Personality
         ttk.Separator(self.frameCharacter, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky=tk.EW, pady=5)
         ttk.Label(self.frameCharacter, text="Personnalité", font=('TkDefaultFont', 9,
                                                                   'bold')).grid(row=2, column=0, columnspan=3, sticky=tk.W, pady=2)
 
-        # Personality sliders (de -1 à 1)
+        # Sliders personality (-1 à 1)
         row = 3
         self.personality_scales = {}
         personality_traits = [
@@ -354,7 +352,7 @@ class GraphDraw:
         self.updateCharacterCombos()
 
     def triggerInteraction(self):
-        """Déclenche une interaction entre deux personnages"""
+        """Déclenche une interaction entre deux characters."""
         actorName = self.varInteractionActor.get()
         targetName = self.varInteractionTarget.get()
         interactionTypeFr = self.varInteractionType.get()
@@ -372,14 +370,14 @@ class GraphDraw:
         target = self.graph.getNode(targetName)
 
         if not actor or not target:
-            self.showInfo("Erreur: Personnage introuvable")
+            self.showInfo("Erreur: Character introuvable")
             return
 
         # Créer l'interaction
-        timestamp = time.time()  # On utilise le temps réel pour l'ID unique, mais la logique est sur les ticks
+        timestamp = time.time()  # Temps réel pour ID unique, logique sur ticks
         current_tick = self.time_manager.get_current_tick()
 
-        # Traduction du type d'interaction français vers le nom de fonction anglais
+        # Traduction français -> anglais
         interactionType = self.INTERACTION_TRANSLATIONS.get(interactionTypeFr)
         if not interactionType:
             self.showInfo(f"Type d'interaction inconnu: {interactionTypeFr}")
@@ -393,7 +391,7 @@ class GraphDraw:
 
         interaction = interaction_func(actor, target, timestamp)
 
-        # === GESTION DE LA DIFFUSION ET DU TRAITEMENT ===
+        # === GESTION DIFFUSION ET TRAITEMENT ===
 
         # 1. Les participants savent et réagissent TOUJOURS immédiatement
         actor.learnAboutInteraction(interaction)
@@ -488,14 +486,14 @@ class GraphDraw:
     def createCharacter(self):
         name = self.varName.get().strip()
         if not name:
-            self.showInfo("Erreur: Pas de nom de personnage")
+            self.showInfo("Erreur: Pas de nom de character")
             return
 
         if self.graph.getNode(name):
-            self.showInfo(f"Erreur: Personnage '{name}' existe")
+            self.showInfo(f"Erreur: Character '{name}' existe")
             return
 
-        # Récupérer les valeurs de personnalité depuis les sliders
+        # Récupérer les valeurs de personality depuis les sliders
         personality = Personality(
             openness=self.personality_scales["openness"].get(),
             conscientiousness=self.personality_scales["conscientiousness"].get(),
@@ -550,13 +548,13 @@ class GraphDraw:
             disgust=self.emotion_scales["disgust"].get()
         )
 
-        # Vérifier si le nouveau nom existe déjà (sauf si c'est le même personnage)
+        # Vérifier si le nouveau nom existe déjà (sauf si c'est le même character)
         if name != self.selectedCharacter and self.graph.getNode(name):
-            self.showInfo(f"Erreur: Personnage '{name}' existe déjà")
+            self.showInfo(f"Erreur: Character '{name}' existe déjà")
             return
 
         if not self.graph.getNode(self.selectedCharacter):
-            self.showInfo("Erreur: Personnage MAJ introuvable")
+            self.showInfo("Erreur: Character MAJ introuvable")
             return
 
         self.graph.updateNode(self.selectedCharacter, name, personality, emotion)  # ORDER: oldName, newName, personality, emotion
@@ -567,11 +565,11 @@ class GraphDraw:
         self.updateCharacterCombos()
         self.updateBtn()
         self.drawGraph()
-        self.showInfo(f"Personnage '{name}' mis à jour avec succès")
+        self.showInfo(f"Character '{name}' mis à jour avec succès")
 
     def createRelationship(self):
         if len(self.graph.listNode) < 2:
-            self.showInfo("Erreur: Il faut au moins 2 personnages")
+            self.showInfo("Erreur: Il faut au moins 2 characters")
             return
 
         source = self.varSource.get()
@@ -584,11 +582,11 @@ class GraphDraw:
             distance = 1
 
         if not source or not target:
-            self.showInfo("Erreur: Sélectionner un personnage source et cible")
+            self.showInfo("Erreur: Sélectionner character source et cible")
             return
 
         if source == target:
-            self.showInfo("Erreur: Sélectionner des personnages différents")
+            self.showInfo("Erreur: Sélectionner des characters différents")
             return
 
         if not typeRelationshipText:
@@ -659,15 +657,15 @@ class GraphDraw:
 
         privacy, commitment, passion = relationship_map.get(typeRelationshipText, (0.6, 0.5, 0.1))
 
-        # Mise à jour des valeurs
+        # Update des valeurs
         typeRelationship = TypeRelationship(privacy, commitment, passion)
 
-        # On met à jour l'objet Relationship directement via le Graph
-        # (Comme updateEdge supprime et recrée, on utilise la méthode du graphe)
+        # Update l'objet Relationship via le Graph
+        # (updateEdge supprime et recrée, on utilise la méthode du graph)
         self.graph.updateEdge(source, target, typeRelationship)
 
-        # updateEdge dans Graph.py supprime et recrée l'arête.
-        # Il faut donc réappliquer la distance sur la nouvelle arête créée.
+        # updateEdge dans Graph.py supprime et recrée l'arête
+        # Il faut donc réappliquer la distance sur la nouvelle arête créée
         new_edge = self.graph.getEdge(source, target)
         if new_edge:
             new_edge.informational_distance = distance
@@ -691,7 +689,7 @@ class GraphDraw:
         if self.pos is None or set(self.pos.keys()) != set(self.graph.toNetworkx().nodes()):
             self.pos = nx.spring_layout(self.graph.toNetworkx(), k=3, iterations=50, seed=42)
 
-        # Dessin des Noeuds
+        # Dessin des nœuds
         node_colors = []
         nx_graph = self.graph.toNetworkx()
         for node in nx_graph.nodes():
@@ -751,7 +749,7 @@ class GraphDraw:
                 connectionstyle='arc3, rad=0.2',
                 arrows=True, arrowsize=20, ax=self.ax
             )
-            # On active le picker manuellement
+            # Activer le picker manuellement
             for arrow in self.curved_artist:
                 arrow.set_picker(5)
 
@@ -763,7 +761,7 @@ class GraphDraw:
             return
 
         clickNode = self.findNode(event.xdata, event.ydata)
-        clickEdge = self.findEdge(event)  # <-- On passe 'event' directement
+        clickEdge = self.findEdge(event)  # <-- Passer 'event' directement
 
         if clickNode:
             self.onClick_Node(clickNode)
@@ -788,7 +786,7 @@ class GraphDraw:
             self.varName.delete(0, tk.END)
             self.varName.insert(0, character.name)
 
-            # Charger les valeurs de personnalité dans les sliders
+            # Charger les valeurs de personality dans les sliders
             self.personality_scales["openness"].set(character.personality.openness)
             self.personality_scales["conscientiousness"].set(character.personality.conscientiousness)
             self.personality_scales["extraversion"].set(character.personality.extraversion)
@@ -851,15 +849,13 @@ class GraphDraw:
         return None
 
     def findEdge(self, event):
-        """
-        Trouve une arête en utilisant la détection native de Matplotlib.
-        """
+        """Trouve une arête avec la détection native de Matplotlib."""
 
         # Fonction utilitaire pour vérifier une liste d'artistes
         def check_artists(artists, data):
             if not artists:
                 return None
-            # On parcourt chaque flèche pour voir si l'événement la concerne
+            # Parcourir chaque flèche pour voir si l'événement la concerne
             for i, arrow in enumerate(artists):
                 is_hit, _ = arrow.contains(event)
                 if is_hit:
@@ -883,15 +879,15 @@ class GraphDraw:
         if not character:
             return
 
-        info = f"=== PERSONNAGE ===\n"
+        info = f"=== CHARACTER ===\n"
         info += f"Nom: {character.name}\n"
         info += f"Emotions: {character.emotions}\n"
-        info += f"Personnalité: {character.personality}\n"
+        info += f"Personality: {character.personality}\n"
 
-        # Affichage des interactions connues (Les 5 dernières)
-        info += f"\nMémoire (Derniers événements appris):\n"
+        # Affichage des interactions connues (5 dernières)
+        info += f"\nMémoire (Derniers events appris):\n"
         if character.knownInteractions:
-            # On trie par timestamp inverse pour avoir les plus récents
+            # Trier par timestamp inverse pour avoir les plus récents
             sorted_interactions = sorted(list(character.knownInteractions),
                                          key=lambda x: x.timestamp, reverse=True)
 
@@ -971,7 +967,7 @@ class GraphDraw:
         self.speed_label.pack()
 
     def start_time(self):
-        """Démarre ou reprend."""
+        """Start ou resume."""
         if self.time_manager.current_tick == 0:
             self.time_manager.start()
         else:
@@ -989,7 +985,7 @@ class GraphDraw:
         self.update_time_status()
 
     def reset_time(self):
-        """Réinitialise la simulation"""
+        """Reset la simulation."""
         self.time_manager.stop()
         self.time_manager.reset()
         self.btn_play.config(state="normal")
@@ -997,7 +993,7 @@ class GraphDraw:
         self.update_time_status()
 
     def on_speed_change(self, value):
-        """Appelé quand la vitesse change."""
+        """Callback quand la vitesse change."""
         speed = float(value)
         self.time_manager.set_tick_duration(speed)
         self.speed_label.config(text=f"{speed:.1f}s")
@@ -1051,7 +1047,7 @@ class GraphDraw:
             self.displayEdgeInfo(self.selectedRelationship)
 
     def start_time_loop(self):
-        """Démarre la boucle"""
+        """Start la boucle temporelle."""
 
         def time_loop():
             self.time_manager.tick()
@@ -1067,4 +1063,3 @@ class GraphDraw:
         self.updateBtn()
         self.clearInfo()
         self.drawGraph()
-

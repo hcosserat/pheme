@@ -2,16 +2,13 @@ import numpy as np
 
 
 class Emotions:
-    """
-    Classe représentant les émotions d'un personnage.
-    Chaque émotion est représentée par une valeur flottante entre 0 et 1.
-    """
-    happiness: float  # bonheur
-    sadness: float  # tristesse
-    anger: float  # colère
-    fear: float  # peur
-    surprise: float  # surprise
-    disgust: float  # dégoût
+    """Représente les émotions d'un character avec des valeurs float entre 0 et 1."""
+    happiness: float
+    sadness: float
+    anger: float
+    fear: float
+    surprise: float
+    disgust: float
 
     def __init__(self, happiness: float = 0.0,
                  sadness: float = 0.0,
@@ -19,7 +16,7 @@ class Emotions:
                  fear: float = 0.0,
                  surprise: float = 0.0,
                  disgust: float = 0.0):
-        """Initialise les émotions avec les valeurs données ou par défaut à 0."""
+        """Init les émotions avec clamp [0,1]."""
         self.happiness = max(0.0, min(1.0, happiness))
         self.sadness = max(0.0, min(1.0, sadness))
         self.anger = max(0.0, min(1.0, anger))
@@ -32,14 +29,14 @@ class Emotions:
         self.updateBadEmotions(change)
 
     def updateGoodEmotions(self, change):
-        self.happiness = max(0.0, min(1.0, self.surprise + change * 0.38))
-        self.surprise = max(0.0, min(1.0, self.surprise + change * 0.59))
+        self.happiness = max(0.0, min(1.0, self.happiness + change * 0.38 / 2))
+        self.surprise = max(0.0, min(1.0, self.surprise + change * 0.59 / 2))
 
     def updateBadEmotions(self, change):
-        self.sadness = max(0.0, min(1.0, self.surprise - change * 0.35))
-        self.anger = max(0.0, min(1.0, self.surprise - change * 0.48))
-        self.fear = max(0.0, min(1.0, self.surprise - change * 0.41))
-        self.disgust = max(0.0, min(1.0, self.surprise - change * 0.54))
+        self.sadness = max(0.0, min(1.0, self.sadness - change * 0.35 / 2))
+        self.anger = max(0.0, min(1.0, self.anger - change * 0.48 / 2))
+        self.fear = max(0.0, min(1.0, self.fear - change * 0.41 / 2))
+        self.disgust = max(0.0, min(1.0, self.disgust - change * 0.54 / 2))
 
     def __repr__(self) -> str:
         return (f"Emotions(happiness={self.happiness:.2f}, "

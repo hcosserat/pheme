@@ -12,14 +12,12 @@ from ..Universe.Graph import Graph
 
 
 class InteractionsEngine:
-    """
-    Gère les mises à jour des émotions et relations basées sur les interactions.
-    """
+    """Gère les updates des émotions et relations basées sur les interactions."""
 
     def __init__(self, graph: Graph):
         """
         Args:
-            graph: Le graphe contenant les personnages et leurs relations
+            graph: Le graph contenant les characters et leurs relations
         """
         self.graph = graph
         self.config = EngineConfiguration()
@@ -28,26 +26,25 @@ class InteractionsEngine:
 
     def tick(self, current_tick: int):
         """
-        Met à jour la diffusion des informations.
-        À appeler à chaque tick de la simulation.
-        Traite les informations dont le temps de trajet est écoulé.
+        Update la diffusion des infos à chaque tick.
+        Traite les infos dont le temps de trajet est écoulé.
         """
-        # On filtre les événements qui sont arrivés (tick_arrivée <= current_tick)
+        # Filtrer les événements arrivés (tick_arrivée <= current_tick)
         remaining_propagations = []
 
         for arrival_tick, target, interaction in self.pending_propagations:
             if arrival_tick <= current_tick:
-                # L'information arrive au personnage cible
-                # On vérifie s'il ne la connait pas déjà (pour éviter les doublons)
+                # L'info arrive au character cible
+                # Éviter les doublons
                 if interaction not in target.knownInteractions:
                     target.learnAboutInteraction(interaction)
-                    # Le personnage réagit à cette nouvelle information
+                    # Le character réagit à cette nouvelle info
                     self.processInteractionForCharacter(target, interaction)
 
-                    # Optionnel : Ici, on pourrait déclencher une re-diffusion (bouche-à-oreille)
+                    # Optionnel : bouche-à-oreille
                     # self.diffuseInteraction(target, interaction, current_tick)
             else:
-                # L'information est toujours en transit
+                # L'info est toujours en transit
                 remaining_propagations.append((arrival_tick, target, interaction))
 
         self.pending_propagations = remaining_propagations
@@ -55,16 +52,10 @@ class InteractionsEngine:
     def diffuseInteraction(self, source: Character, interaction: Interaction, current_tick: int,
                            already_informed: Set[Character] = None):
         """
-        Un Character diffuse une information sur une Interaction à ses voisins.
-        La diffusion prend du temps selon la distance informationnelle des relations.
-
-        Args:
-            source: Le personnage qui diffuse l'information
-            interaction: L'interaction à diffuser
-            current_tick: Le tick actuel de la simulation
-            already_informed: (Obsolète avec le système de tick, gardé pour compatibilité)
+        Un Character diffuse une info sur une Interaction à ses voisins.
+        La diffusion prend du temps selon la distance informationnelle.
         """
-        # Le propagateur apprend l'info immédiatement s'il ne la connait pas
+        # Le propagateur apprend l'info immédiatement
         if interaction not in source.knownInteractions:
             source.learnAboutInteraction(interaction)
 
@@ -75,23 +66,18 @@ class InteractionsEngine:
             relationship = self.graph.getEdge(source.name, neighbor.name)
 
             if relationship is not None:
-                # Calcul du moment d'arrivée de l'information
+                # Calcul du moment d'arrivée de l'info
                 distance = relationship.informational_distance
                 arrival_tick = current_tick + distance
 
-                # On planifie l'arrivée de l'information
+                # Planifier l'arrivée de l'info
                 self.pending_propagations.append((arrival_tick, neighbor, interaction))
 
     def processInteractionForCharacter(self, character: Character, interaction: Interaction):
         """
         Un Character traite une Interaction.
-
-        - Si le Character fait partie de l'Interaction, changements directs
-        - Si le Character a une relation avec un des participants, changements indirects
-
-        Args:
-            character: Le personnage qui traite l'interaction
-            interaction: L'interaction à traiter
+        - Si impliqué directement : changements directs
+        - Si relation avec participant : changements indirects
         """
         # Vérifier si le personnage est directement impliqué
         is_actor = (character == interaction.actor)
@@ -110,16 +96,10 @@ class InteractionsEngine:
 
     def _process_direct_interaction(self, character: Character, interaction: Interaction, is_actor: bool):
         """
-        Traite une interaction directe (le personnage est impliqué).
-        Met à jour ses émotions et sa relation avec l'autre participant.
-        Met également à jour indirectement les relations avec les proches de l'autre participant.
-
-        Args:
-            character: Le personnage qui traite l'interaction
-            interaction: L'interaction
-            is_actor: True si le personnage est l'acteur, False s'il est la cible
+        Traite une interaction directe (character impliqué).
+        Update émotions et relation avec l'autre participant + relations indirectes.
         """
-        # Déterminer l'autre personnage
+        # Déterminer l'autre character
         other_character = interaction.target if is_actor else interaction.actor
 
         # Vecteurs pour les calculs matriciels
@@ -127,21 +107,21 @@ class InteractionsEngine:
         personality_vector = character.personality.asArray()
         current_emotions = character.emotions.asArray()
 
-        # Inverser la valence si c'est l'acteur (l'acteur voit l'interaction différemment)
+        # Inverser la valence si c'est l'acteur
         if is_actor:
             interaction_vector = interaction_vector.copy()
             interaction_vector[4] *= self.config.actor_valence_attenuation
 
-        # === 1. Mise à jour des émotions ===
+        # === 1. Update des émotions ===
         new_emotions_array = self._apply_emotion_change_direct(
             current_emotions, interaction_vector, personality_vector
         )
         self._update_character_emotions(character, new_emotions_array)
 
-        # === 2. Mise à jour de la relation directe ===
+        # === 2. Update de la relation directe ===
         relationship = self.graph.getEdge(character.name, other_character.name)
 
-        # Si la relation n'existe pas, on la crée (Relation Neutre par défaut)
+        # Créer relation neutre si n'existe pas
         if relationship is None:
             new_type = TypeRelationship(0.0, 0.0, 0.0)
             self.graph.addEdge(character.name, other_character.name, new_type)
@@ -149,7 +129,7 @@ class InteractionsEngine:
 
         self._update_relationship_direct(character, other_character, relationship, interaction_vector)
 
-        # === 3. Propagation : Mise à jour des relations associées ===
+        # === 3. Propagation : Update des relations associées ===
         neighbors = self.graph.getNeighbors(other_character)
         for neighbor in neighbors:
             if neighbor.name == character.name:
@@ -163,14 +143,8 @@ class InteractionsEngine:
     def _process_indirect_interaction(self, character: Character, interaction: Interaction,
                                       has_relation_with_actor: bool, has_relation_with_target: bool):
         """
-        Traite une interaction indirecte (le personnage connaît un participant).
-        Les changements sont atténués.
-
-        Args:
-            character: Le personnage observateur
-            interaction: L'interaction observée
-            has_relation_with_actor: True si le personnage connaît l'acteur
-            has_relation_with_target: True si le personnage connaît la cible
+        Traite une interaction indirecte (character connaît un participant).
+        Changements atténués.
         """
         if not (has_relation_with_actor or has_relation_with_target):
             return
@@ -180,13 +154,13 @@ class InteractionsEngine:
         personality_vector = character.personality.asArray()
         current_emotions = character.emotions.asArray()
 
-        # Mise à jour des émotions (impact indirect)
+        # Update des émotions (impact indirect)
         new_emotions_array = self._apply_emotion_change_indirect(
             current_emotions, interaction_vector, personality_vector
         )
         self._update_character_emotions(character, new_emotions_array)
 
-        # Mise à jour des relations avec les participants connus
+        # Update des relations avec les participants connus
         if has_relation_with_actor:
             relationship = self.graph.getEdge(character.name, interaction.actor.name)
             if relationship is not None:
@@ -198,13 +172,7 @@ class InteractionsEngine:
                 self._update_relationship_indirect(character, relationship, interaction_vector)
 
     def _update_character_emotions(self, character: Character, new_emotions_array: np.ndarray):
-        """
-        Met à jour les émotions d'un personnage à partir d'un vecteur numpy.
-
-        Args:
-            character: Le personnage à mettre à jour
-            new_emotions_array: Vecteur numpy (6,) des nouvelles émotions
-        """
+        """Update les émotions d'un character depuis un vecteur numpy."""
         new_emotions = Emotions(
             happiness=float(new_emotions_array[0]),
             sadness=float(new_emotions_array[1]),
@@ -217,15 +185,7 @@ class InteractionsEngine:
 
     def _update_relationship_direct(self, source: Character, target: Character,
                                     relationship: Relationship, interaction_vector: np.ndarray):
-        """
-        Met à jour une relation de manière directe.
-
-        Args:
-            source: Personnage source de la relation
-            target: Personnage cible de la relation
-            relationship: L'objet Relationship à mettre à jour
-            interaction_vector: Vecteur de l'interaction
-        """
+        """Update une relation de manière directe."""
         current_relationship_array = relationship.asArray()
         personality_source = source.personality.asArray()
         personality_target = target.personality.asArray()
@@ -242,14 +202,7 @@ class InteractionsEngine:
 
     def _update_relationship_indirect(self, observer: Character, relationship: Relationship,
                                       interaction_vector: np.ndarray):
-        """
-        Met à jour une relation de manière indirecte.
-
-        Args:
-            observer: Personnage observateur
-            relationship: L'objet Relationship à mettre à jour
-            interaction_vector: Vecteur de l'interaction
-        """
+        """Update une relation de manière indirecte."""
         current_relationship_array = relationship.asArray()
         personality_observer = observer.personality.asArray()
 
@@ -263,40 +216,19 @@ class InteractionsEngine:
         relationship.typeRelationship.nom = relationship.typeRelationship.identifyName()
 
     def _has_relationship(self, character1: Character, character2: Character) -> bool:
-        """
-        Vérifie si deux personnages ont une relation.
-
-        Args:
-            character1: Premier personnage
-            character2: Deuxième personnage
-
-        Returns:
-            True s'il existe une relation de character1 vers character2
-        """
+        """Vérifie si deux characters ont une relation."""
         return self.graph.getEdge(character1.name, character2.name) is not None
 
     def processInteractionForGroup(self, group: list[Character], interaction: Interaction):
-        """
-        Traite une interaction par tout un ensemble de personnages.
-        Par exemple, si plusieurs personnages ont vu une interactions avoir lieu.
-
-        Args:
-            group: liste des Character qui traiteront l'interaction
-            interaction: interaction à traiter
-        """
+        """Traite une interaction par tout un ensemble de characters."""
         for character in group:
             self.processInteractionForCharacter(character, interaction)
 
     def processInteractionForAll(self, interaction: Interaction):
-        """
-        Traite une interaction pour tous les personnages du graphe.
-
-        Args:
-            interaction: L'interaction à traiter
-        """
+        """Traite une interaction pour tous les characters du graph."""
         self.processInteractionForGroup(self.graph.listNode, interaction)
 
-    # === À partir d'ici c'est le calcul matricielle pour la mise à jour des vecteurs ===
+    # === Calculs matriciels pour l'update des vecteurs ===
 
     def _apply_emotion_change_direct(self, current_emotions: np.ndarray,
                                      interaction_vector: np.ndarray,

@@ -3,16 +3,10 @@ from typing import Callable, List
 
 
 class TimeManager:
-    """
-    Gestionnaire du temps pour la simulation.
-    Permet de faire évoluer les personnages et relations au fil du temps.
-    """
+    """Gestionnaire du temps pour la simulation."""
 
     def __init__(self, tick_duration: float = 1.0):
-        """
-        Args:
-            tick_duration: Durée d'un tick en secondes (par défaut 1 seconde)
-        """
+        """Args: tick_duration en secondes (défaut 1 seconde)."""
         self.tick_duration = tick_duration
         self.current_tick = 0
         self.is_running = False
@@ -20,12 +14,7 @@ class TimeManager:
         self.last_tick_time = 0
 
     def register_callback(self, callback: Callable):
-        """
-        Enregistre une fonction à appeler à chaque tick.
-        
-        Args:
-            callback: Fonction à appeler (doit accepter current_tick comme paramètre)
-        """
+        """Enregistre une fonction à appeler à chaque tick (doit accepter current_tick)."""
         if callback not in self.callbacks:
             self.callbacks.append(callback)
 
@@ -35,7 +24,7 @@ class TimeManager:
             self.callbacks.remove(callback)
 
     def start(self):
-        """Démarre le gestionnaire de temps."""
+        """Start le gestionnaire de temps."""
         self.is_running = True
         self.last_tick_time = time.time()
 
@@ -48,7 +37,7 @@ class TimeManager:
         self.is_running = False
 
     def resume(self):
-        """Reprend le gestionnaire de temps."""
+        """Resume le gestionnaire de temps."""
         self.is_running = True
         self.last_tick_time = time.time()
 

@@ -1,14 +1,12 @@
 class TypeRelationship:
-    """
-    Classe pour définir le type de relation basé sur la théorie de l'amour de Sternberg (L'intimité, l'engagement et la passion)
-    """
+    """Type de relation basé sur la théorie de Sternberg (intimité, engagement, passion)."""
 
     def __init__(self, privacy, commitment, passion):
         """
         Args:
-            privacy (float): Niveau d'intimité (-1 à 1)
-            commitment (float): Niveau d'engagement (-1 à 1) 
-            passion (float): Niveau de passion (-1 à 1)
+            privacy: Niveau d'intimité (-1 à 1)
+            commitment: Niveau d'engagement (-1 à 1)
+            passion: Niveau de passion (-1 à 1)
         """
         self.privacy = max(-1.0, min(1.0, privacy))
         self.commitment = max(-1.0, min(1.0, commitment))
@@ -16,9 +14,7 @@ class TypeRelationship:
         self.nom = self.identifyName()
 
     def identifyName(self):
-        """
-        Détermine le nom du type de relation basé sur l'intimité, l'engagement et la passion
-        """
+        """Détermine le nom du type basé sur intimité, engagement et passion."""
         # Calcul de la tendance globale
         average = (self.privacy + self.commitment + self.passion) / 3
 
@@ -47,9 +43,7 @@ class TypeRelationship:
             return "Haine"
 
     def getIntensity(self):
-        """
-        Calcule l'intensité globale basée sur les valeurs absolues
-        """
+        """Calcule l'intensité globale basée sur les valeurs absolues."""
         return (abs(self.privacy) + abs(self.commitment) + abs(self.passion)) / 3.0
 
     def update(self, change):
@@ -66,7 +60,7 @@ class TypeRelationship:
         return (f"{self.nom} (I:{self.privacy:.2f}, E:{self.commitment:.2f}, P:{self.passion:.2f})")
 
 
-# Fast conception type
+# Factory functions pour créer rapidement des types de relations
 def newRelatioship_Lovely(privacy=0.8, commitment=0.7, passion=0.9):
     return TypeRelationship(privacy, commitment, passion)
 

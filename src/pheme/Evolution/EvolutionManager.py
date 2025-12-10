@@ -6,17 +6,21 @@ from ..Universe.Graph import Graph
 
 
 class EvolutionManager:
+    """Gère l'évolution automatique des relations et émotions dans le graph."""
+
     def __init__(self, graph: Graph):
         self.graph = graph
         self.probRelationship = 0.3
         self.decayEmotion = 0.05
 
     def evolve(self):
+        """Evolution complète : création relations + update relations + update émotions."""
         self.createRelationship()
         self.updateRelationships()
         self.updateEmotions()
 
     def createRelationship(self):
+        """Crée de nouvelles relations par transitivité (ami d'ami)."""
         characters = self.graph.listNode
 
         for characterIntermediaire in characters:
@@ -44,10 +48,12 @@ class EvolutionManager:
             self.updateEmotionRelationship(nameA, nameB, typeRelationship)
 
     def getProbaRelationship(self, relationshipA, relationshipB, characterA, characterB):
+        """Calcule la probabilité de création d'une relation basée sur intensité et compatibilité."""
         intensiteA = relationshipA.typeRelationship.getIntensity()
         intensiteB = relationshipB.typeRelationship.getIntensity()
         intensite = (intensiteA + intensiteB) / 2.0
 
+        # Compatibilité des personalities
         samePersonality = 1 + Personality.getMixPersonality(characterA.personality, characterB.personality)
         togetherRelationship = self.getTogetherRelationship(relationshipA, relationshipB)
 

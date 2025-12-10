@@ -3,52 +3,52 @@ from ..Characters.Character import Character
 
 
 def killed(actor: Character, target: Character, timestamp: float) -> Interaction:
-    """Interaction où l'acteur tue la cible."""
+    """L'acteur tue la cible."""
     return Interaction(
         actor=actor,
         target=target,
         timestamp=timestamp,
         description="killed",
-        agency=0.9,  # très assertif/dominant
-        communion=-0.9,  # antisocial
-        intensity=0.8,  # haute énergie
-        physical_contact=0.9,  # contact physique
-        valence=-1.0  # très négatif pour la cible
+        agency=0.9,
+        communion=-0.9,
+        intensity=0.8,
+        physical_contact=0.9,
+        valence=-1.0
     )
 
 
 def laughed_at(actor: Character, target: Character, timestamp: float) -> Interaction:
-    """Interaction où l'acteur se moque de la cible."""
+    """L'acteur se moque de la cible."""
     return Interaction(
         actor=actor,
         target=target,
         timestamp=timestamp,
         description="laughed at",
-        agency=0.5,  # moyennement assertif
-        communion=-0.4,  # légèrement antisocial
-        intensity=0.6,  # énergie modérée
-        physical_contact=0.1,  # surtout verbal
-        valence=-0.3  # légèrement négatif
+        agency=0.5,
+        communion=-0.4,
+        intensity=0.6,
+        physical_contact=0.1,
+        valence=-0.3
     )
 
 
 def helped(actor: Character, target: Character, timestamp: float) -> Interaction:
-    """Interaction où l'acteur aide la cible."""
+    """L'acteur aide la cible."""
     return Interaction(
         actor=actor,
         target=target,
         timestamp=timestamp,
         description="helped",
-        agency=0.3,  # légèrement assertif
-        communion=0.8,  # prosocial
-        intensity=0.4,  # énergie modérée
-        physical_contact=0.2,  # surtout verbal/psychologique
-        valence=0.7  # positif pour la cible
+        agency=0.3,
+        communion=0.8,
+        intensity=0.4,
+        physical_contact=0.2,
+        valence=0.7
     )
 
 
 def kissed(actor: Character, target: Character, timestamp: float) -> Interaction:
-    """Interaction où l'acteur embrasse la cible."""
+    """L'acteur embrasse la cible."""
     return Interaction(
         actor=actor,
         target=target,

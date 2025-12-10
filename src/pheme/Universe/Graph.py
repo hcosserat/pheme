@@ -5,9 +5,7 @@ from ..Relationships.Relationship import Relationship
 
 
 class Graph:
-    """
-    Classe représantant le graphe de relation
-    """
+    """Représente le graph de relations entre characters."""
 
     def __init__(self):
 

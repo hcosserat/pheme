@@ -7,20 +7,20 @@ from src.pheme.Interactions.InteractionsEngine import InteractionsEngine
 
 
 def test_engine():
-    """Test complet de l'Engine avec plusieurs personnages et interactions."""
+    """Test complet de l'Engine avec plusieurs characters et interactions."""
 
     print("=" * 80)
     print("TEST DE L'ENGINE DU SYSTÈME DE RELATIONS SOCIALES")
     print("=" * 80)
 
-    # Création du graphe
+    # Création du graph
     graph = Graph()
 
-    # Création des personnages
+    # Création des characters
     print("\n1. CRÉATION DES PERSONNAGES")
     print("-" * 80)
 
-    # Alice : extravertie, agréable, stable émotionnellement
+    # Alice : extravertie, agréable, stable
     alice_personality = Personality(
         openness=0.6,
         conscientiousness=0.4,
@@ -31,7 +31,7 @@ def test_engine():
     alice_emotions = Emotions(happiness=0.6, sadness=0.1, anger=0.1, fear=0.1, surprise=0.3, disgust=0.1)
     graph.addNode("Alice", alice_personality, alice_emotions)
 
-    # Bob : introverti, consciencieux, un peu anxieux
+    # Bob : introverti, consciencieux, anxieux
     bob_personality = Personality(
         openness=0.3,
         conscientiousness=0.8,
