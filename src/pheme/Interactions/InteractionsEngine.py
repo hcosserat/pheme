@@ -41,8 +41,8 @@ class InteractionsEngine:
                     # Le character réagit à cette nouvelle info
                     self.processInteractionForCharacter(target, interaction)
 
-                    # Optionnel : bouche-à-oreille
-                    # self.diffuseInteraction(target, interaction, current_tick)
+                    # Bouche-à-oreille
+                    self.diffuseInteraction(target, interaction, current_tick)
             else:
                 # L'info est toujours en transit
                 remaining_propagations.append((arrival_tick, target, interaction))
